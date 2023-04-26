@@ -10,7 +10,7 @@ from django.core.validators import RegexValidator
 #    kwargs['patient_id'] =int(max_patient_id)+1 if max_patient_id else 100000
 #    super(PatientmasterManager, self).create(*args, **kwargs)
 
-
+# today write the code otp verify
 class Mobile_Reg(models.Model):
     phone_number = models.CharField(unique=True,max_length=10, null= True, blank=True)
     device_id = models.CharField(max_length=100)
