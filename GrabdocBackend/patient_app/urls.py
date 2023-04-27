@@ -4,6 +4,7 @@ from patient_app.views import *
 
 urlpatterns = [
     path('mobileregistion/',MobileRegView.as_view()),
+    path('verifiy-otp/', verifiyOtp.as_view()),
     path('login/', PatientLoginView.as_view()),
     path('<int:patient_id>', PatientDetailsUpdate.as_view()),
 
