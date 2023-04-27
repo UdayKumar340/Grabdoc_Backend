@@ -29,9 +29,17 @@ class verifiyOtp(APIView):
         try:
 
             data = request.data
+            print(data)
+
             user_obj = Mobile_Reg.objects.get(phone_number = data.get('phone_number'))
 
             otp = data.get('otp')
+            if user_obj.number_of_attements >=3:
+                return Response({"staus":400,"error":" To many attements"})
+            user_obj.number_of_attements +=1
+            user_obj.save()
+
+
 
             if user_obj.otp == otp:
                 user_obj.is_phone_verified = True  # this fields add MR model
@@ -39,7 +47,7 @@ class verifiyOtp(APIView):
                 return Response ({'status':200 , 'message': "Your OPT is verified"})
             return Response ({'status':403 , 'message': "Your OPT is worng"})  
 
-        except Exeception as e:
+        except  Exception as e:
             print(e)
         return Response({"staus":404,"error":"someting went worng"})
 
@@ -60,7 +68,7 @@ class verifiyOtp(APIView):
             return Response ({'status':404 , 'message': f"try after few seconds{time}"})
 
         
-        except Exeception as e:
+        except  Exception as e:
             print(e)
         
         return Response ({'status':404 , 'error':"someting went worng"})
