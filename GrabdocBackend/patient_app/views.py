@@ -7,6 +7,7 @@ from rest_framework.decorators import APIView
 from rest_framework.response import Response
 from rest_framework import status
 import datetime
+from .helpers import *
 
 
 
@@ -21,6 +22,59 @@ class MobileRegView(APIView):
             serializer_data.save()
             return Response(serlizer_data.data, status=status.HTTP_201_CREATED)
         return Response(serlizer_data.data, status=status.HTTP_400_BAD_REQUEST) 
+
+
+class verifiyOtp(APIView):
+    def post (self, request):
+        try:
+
+            data = request.data
+            user_obj = Mobile_Reg.objects.get(phone_number = data.get('phone_number'))
+
+            otp = data.get('otp')
+
+            if user_obj.otp == otp:
+                user_obj.is_phone_verified = True  # this fields add MR model
+                user_obj.save()
+                return Response ({'status':200 , 'message': "Your OPT is verified"})
+            return Response ({'status':403 , 'message': "Your OPT is worng"})  
+
+        except Exeception as e:
+            print(e)
+        return Response({"staus":404,"error":"someting went worng"})
+
+
+    def patch(self, request):
+        try:
+            data = request.data
+
+            user_obj = Mobile_Reg.objects.filter(phone_number = data.get("phone_number"))
+
+            if not user_obj.exists():
+                return Response ({'status':404 , 'message': " no user found!"})
+
+            status, time = send_otp_ot_mobile(data.get('phone_number'), user_obj[0] )
+            if status:
+                return Response ({'status':200 , 'message': "New OTP sent"})
+
+            return Response ({'status':404 , 'message': f"try after few seconds{time}"})
+
+        
+        except Exeception as e:
+            print(e)
+        
+        return Response ({'status':404 , 'error':"someting went worng"})
+
+
+
+
+
+
+
+
+
+
+
 
 class PatientLoginView(APIView):
     
