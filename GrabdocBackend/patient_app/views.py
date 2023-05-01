@@ -40,6 +40,11 @@ class verifiyOtp(APIView):
             user_obj.save()
 
 
+            patient = Mobile_Reg.objects.filter(phone_number = phone_number)
+            if patient.exists():
+                return Response({'status':False, 'message':"phone number alredy exists"})
+
+
 
             if user_obj.otp == otp:
                 user_obj.is_phone_verified = True  # this fields add MR model
