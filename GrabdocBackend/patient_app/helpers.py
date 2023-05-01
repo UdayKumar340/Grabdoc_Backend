@@ -15,3 +15,5 @@ def send_otp_ot_mobile(mobile, user_obj):
     except Exeception as e:
         print(e)
          
+
+         
