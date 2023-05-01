@@ -36,6 +36,8 @@ class PatientMasterTable(AbstractUser):
     USERNAME_FIELD = 'username'
 #    objects = PatientmasterManager()
 
+
+
 class ConsultantDiseaseTable(models.Model):
     disease_id  = models.AutoField(unique=True, primary_key = True)
     disease_type = models.CharField(max_length = 300, null = True, blank = True)
