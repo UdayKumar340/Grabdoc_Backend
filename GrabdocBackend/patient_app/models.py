@@ -12,11 +12,11 @@ from django.core.validators import RegexValidator
 
 # today write the code otp verify
 class Mobile_Reg(models.Model):
-    phone_number = models.CharField(unique=True,max_length=10, null= True, blank=True)
+    phone_number = models.CharField(max_length=10, null= True, blank=True)
     device_id = models.CharField(max_length=100)
     is_phone_verified = models.BooleanField(default = False)
     ctime = models.DateTimeField(auto_now_add=True, blank=True)
-    otp = models.PositiveIntegerField(unique=True)
+    otp = models.PositiveIntegerField(null = True)
     number_of_attements = models.IntegerField(default=0)
 
 
