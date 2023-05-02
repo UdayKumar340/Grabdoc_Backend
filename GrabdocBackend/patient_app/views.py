@@ -16,12 +16,18 @@ class MobileRegView(APIView):
     def post(self, request):
         data=request.data
         data['otp']=123456
-        serializer_data= MobileREGSerializer(data=request.data) #channge id 
+        print(data)
+        serializer_data= MobileRegSerializer(data=data) 
 
         if serializer_data.is_valid():
             serializer_data.save()
-            return Response(serlizer_data.data, status=status.HTTP_201_CREATED)
-        return Response(serlizer_data.data, status=status.HTTP_400_BAD_REQUEST) 
+            print(serializer_data)
+            response_data ={"registration_id":serializer_data.data['id'],"success":True}
+            
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        response_data ={"registration_id":None,"success":False,'error_meassege':serializer_data.errors}    
+        print(serializer_data.errors)
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST) 
 
 
 class verifiyOtp(APIView):
