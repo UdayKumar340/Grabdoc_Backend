@@ -5,7 +5,7 @@ from patient_app.models import *
 class MobileRegSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mobile_Reg
-        fields = ['phone_number','device_id','ctime','otp' ]
+        fields = ['id','phone_number','device_id','otp' ]
     def create(self, validated_data):
         return super().create(validated_data)
     
