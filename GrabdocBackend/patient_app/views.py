@@ -8,7 +8,11 @@ from rest_framework.response import Response
 from rest_framework import status
 import datetime
 from .helpers import *
+from rest_framework.authtoken.models import Token
 
+
+#authentication_classes = [TokenAuthentication]
+#permission_classes = [IsAuthenticated]
 
 
 
@@ -25,10 +29,11 @@ class MobileRegView(APIView):
             response_data ={"registration_id":serializer_data.data['id'],"success":True}
             
             return Response(response_data, status=status.HTTP_201_CREATED)
+
+
         response_data ={"registration_id":None,"success":False,'error_meassege':serializer_data.errors}    
         print(serializer_data.errors)
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST) 
-
 
 class verifiyOtp(APIView):
     def post (self, request):
@@ -37,25 +42,28 @@ class verifiyOtp(APIView):
             data = request.data
             print(data)
 
-            user_obj = Mobile_Reg.objects.get(phone_number = data.get('phone_number'))
+            mr_obj = Mobile_Reg.objects.get(id = data.get('registration_id'))
 
             otp = data.get('otp')
-            if user_obj.number_of_attements >=3:
+            if mr_obj.number_of_attements >=3:
                 return Response({"staus":400,"error":" To many attements"})
-            user_obj.number_of_attements +=1
-            user_obj.save()
-
-
-            patient = Mobile_Reg.objects.filter(phone_number = phone_number)
-            if patient.exists():
-                return Response({'status':False, 'message':"phone number alredy exists"})
+            mr_obj.number_of_attements +=1
+            mr_obj.save()
 
 
 
-            if user_obj.otp == otp:
-                user_obj.is_phone_verified = True  # this fields add MR model
-                user_obj.save()
-                return Response ({'status':200 , 'message': "Your OPT is verified"})
+            if mr_obj.otp == otp:
+                mr_obj.is_phone_verified = True  # this fields add MR model
+                mr_obj.save()
+                patient = PatientMasterTable.objects.filter(username = mr_obj.phone_number)
+                if  not patient.exists():
+                    patient = PatientMasterTable(username = mr_obj.phone_number)
+                    patient.save()
+                
+
+                token = Token.objects.create(user=patient)
+
+                return Response ({'status':200 , 'message': "Your OPT is verified","auth_token":token.key})
             return Response ({'status':403 , 'message': "Your OPT is worng"})  
 
         except  Exception as e:
