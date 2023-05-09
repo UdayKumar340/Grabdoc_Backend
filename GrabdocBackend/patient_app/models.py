@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
+from django.contrib.auth.models import User 
 
 #class PatientmasterManager(models.Manager):
 #   def create(self, *args, **kwargs):
@@ -10,9 +11,9 @@ from django.core.validators import RegexValidator
 #    kwargs['patient_id'] =int(max_patient_id)+1 if max_patient_id else 100000
 #    super(PatientmasterManager, self).create(*args, **kwargs)
 
-# today write the code otp verify
+
 class Mobile_Reg(models.Model):
-    phone_number = models.CharField(max_length=10, null= True, blank=True)
+    phone_number = models.CharField(max_length=10, null= False, blank=False)
     device_id = models.CharField(max_length=100)
     is_phone_verified = models.BooleanField(default = False)
     ctime = models.DateTimeField(auto_now_add=True, blank=True)
@@ -20,12 +21,8 @@ class Mobile_Reg(models.Model):
     number_of_attements = models.IntegerField(default=0)
 
 
-
-
-
 class PatientMasterTable(AbstractUser):
     phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
-    patient_id = models.IntegerField(unique=True, primary_key=True)
     patient_first_name = models.CharField(max_length= 200, null=True, blank = True)
     patient_last_name = models.CharField(max_length= 200, null=True, blank = True)
     gendar = models.CharField(max_length= 200, null=True, blank = True)
