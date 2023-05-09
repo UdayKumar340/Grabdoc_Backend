@@ -16,6 +16,8 @@ class MobileRegSerializer(serializers.ModelSerializer):
 
 
 
+
+
 class PatientMasterTableSerializer(serializers.ModelSerializer):
 
     class Meta:
