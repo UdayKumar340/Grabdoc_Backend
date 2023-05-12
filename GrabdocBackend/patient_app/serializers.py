@@ -22,7 +22,7 @@ class PatientMasterTableSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PatientMasterTable
-        fields =['username', 'email']  
+        fields = ["patient_first_name","patient_last_name","gendar","email",'date_of_birth'] 
     
     def create(self, validated_data):
         return super().create(validated_data)
