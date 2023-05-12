@@ -9,7 +9,8 @@ from rest_framework import status
 import datetime
 from .helpers import *
 from rest_framework.authtoken.models import Token
-
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 #authentication_classes = [TokenAuthentication]
 #permission_classes = [IsAuthenticated]
@@ -49,22 +50,28 @@ class verifiyOtp(APIView):
                 return Response({"staus":400,"error":" To many attements"})
             mr_obj.number_of_attements +=1
             mr_obj.save()
+            print(mr_obj)
 
 
 
             if mr_obj.otp == otp:
                 mr_obj.is_phone_verified = True  # this fields add MR model
                 mr_obj.save()
-                patient = PatientMasterTable.objects.filter(username = mr_obj.phone_number)
-                if  not patient.exists():
+                patient = PatientMasterTable.objects.filter(username = mr_obj.phone_number).first()
+
+
+                if   patient is None:
                     patient = PatientMasterTable(username = mr_obj.phone_number)
                     patient.save()
+                print(patient)
                 
-
+                Token.objects.filter(user=patient).delete()
                 token = Token.objects.create(user=patient)
+            
+                print(token)
 
-                return Response ({'status':200 , 'message': "Your OPT is verified","auth_token":token.key})
-            return Response ({'status':403 , 'message': "Your OPT is worng"})  
+                return Response ({'status':200 , 'message': "Your OPT is verified","auth_token":token.key, "success":True})
+            return Response ({'status':403 , 'message': "Your OPT is worng","success":False})  
 
         except  Exception as e:
             print(e)
@@ -118,24 +125,41 @@ class PatientLoginView(APIView):
         if serlizer_data.is_valid():
             serlizer_data.save()
             return Response(serlizer_data.data, status=status.HTTP_201_CREATED)
-        
+
+
+
+
 
 class PatientDetailsUpdate(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
-    def get(self, request, patient_id):
-        user_obj = PatientMasterTable.objects.filter(patient_id = patient_id)
-        serlizer_data = PatientMasterTableSerializer(user_obj, many=True)
-        return Response(serlizer_data.data)
+    def get(self, request):
+        user_obj = request.user
+        print(user_obj)
+        serlizer_data = PatientMasterTableSerializer([user_obj], many=True)
+        return Response(serlizer_data.data[0])
     
-    def post(self, request, patient_id):
-        user_obj = PatientMasterTable.objects.filter(patient_id = patient_id)
-        updated_data ={'patient_first_name': request.get('patient_first_name', ''),
-                        'patient_last_name': request.get('patient_last_name', ''),
-                        'gendar': request.get('gendar', ''),
-                        'email': request.get('email', ''),
-                        'date_of_birth': request.get('date_of_birth', '')
+    def post(self, request):
+        user_obj = request.user
+        print(request.data)
+        
+        updated_data ={'patient_first_name': request.data.get('patient_first_name', ''),
+                        'patient_last_name': request.data.get('patient_last_name', ''),
+                        'gendar': request.data.get('gendar', ''),
+                        'email': request.data.get('email', '')
+#                        'date_of_birth': request.post('date_of_birth', '')
                         }
-        PatientMasterTableSerializer.update()
+        serializer_data= PatientMasterTableSerializer(user_obj,data = updated_data) 
+
+        if serializer_data.is_valid():
+            print(serializer_data)
+            serializer_data.save()
+            return Response(serializer_data.data)
+        else:
+            print(serializer_data)
+
+            return Response({'status':400 , 'error':" Validition Failed"})
 
 
 
