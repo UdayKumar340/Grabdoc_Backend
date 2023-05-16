@@ -46,18 +46,14 @@ class PatientMasterTable(AbstractUser):
 
 
 
-
-
 class ConsultantDiseaseTable(models.Model):
-    disease_id  = models.AutoField(unique=True, primary_key = True)
     disease_type = models.CharField(max_length = 300, null = True, blank = True)
 
     class Meta:
         db_table= 'consultant_disease_table'
 
 class SpecalityMastertable(models.Model):
-    specality_id = models.AutoField(unique = True, primary_key = True)
-    disease_id = models.ForeignKey(ConsultantDiseaseTable, to_field ='disease_id', on_delete=models.CASCADE)
+
     specality_name = models.CharField(max_length = 200, null = True, blank = True)
     specality_description = models.CharField(max_length = 400, null = True, blank = True)
 
@@ -66,8 +62,6 @@ class SpecalityMastertable(models.Model):
 
 class DoctorsMastertable(models.Model):
 
-    doctor_id = models.AutoField(unique = True, primary_key = True)
-    specality_id = models.ForeignKey(SpecalityMastertable, to_field ='specality_id', on_delete=models.CASCADE)
     first_name = models.CharField(max_length = 200, null=True, blank = True)
     last_name = models.CharField(max_length = 200, null = True, blank = True)
     experience = models.FloatField(null = True, blank = True)
