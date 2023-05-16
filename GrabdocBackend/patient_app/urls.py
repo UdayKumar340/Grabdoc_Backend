@@ -6,16 +6,25 @@ urlpatterns = [
     path('mobileregistion/',MobileRegView.as_view()),
     path('verifiy-otp/', verifiyOtp.as_view()),
     path('login/', PatientLoginView.as_view()),
+    path('details/', PatientDetailsUpdate.as_view()),
+
+
+
+    path('diseases/', ConsultantDiseaseTableView.as_view()),
+
+    path('specalities/', SpecalityDoctorsView.as_view()),
+
+
+
+
+
+
+
     
 
 
 
 
-    path('details/', PatientDetailsUpdate.as_view()),
-
-    path('consultantdisease/', ConsultantDiseaseTableView.as_view()),
-    path('consultantdisease/<int:consultant_id>/', ConsultantDiseaseTableView.as_view()),
-    path('SpecalityMaster/<int:specality_id>/', SpecalityDoctorsView.as_view()),
     path('physician/<int:doctor_id>/', DoctorSlotsView.as_view()),
 
 
