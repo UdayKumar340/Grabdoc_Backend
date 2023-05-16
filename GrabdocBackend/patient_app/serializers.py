@@ -34,27 +34,15 @@ class ConsultantDiseaseTableSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ConsultantDiseaseTable
-        fields =['disease_id', 'disease_type']
+        fields =['id','disease_type']
     
-    print("serializer calling")
-    def create(self, validated_data):
-        print("consultant create")
-        return super().create(validated_data)
-    
-    def update(self, instance, validated_data):
-        return super().update(instance, validated_data)
+
 
 class SpecalityMastertableSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SpecalityMastertable
-        fields =['disease_id', 'specality_id', 'specality_name', 'specality_description']
-    
-    def create(self, validated_data):
-        return super().create(validated_data)
-    
-    def update(self, instance, validated_data):
-        return super().update(instance, validated_data)
+        fields =['id','specality_name', 'specality_description']
 
 class DoctorsMastertableSerializer(serializers.ModelSerializer):
 
