@@ -147,8 +147,8 @@ class PatientDetailsUpdate(APIView):
         updated_data ={'patient_first_name': request.data.get('patient_first_name', ''),
                         'patient_last_name': request.data.get('patient_last_name', ''),
                         'gendar': request.data.get('gendar', ''),
-                        'email': request.data.get('email', '')
-#                        'date_of_birth': request.post('date_of_birth', '')
+                        'email': request.data.get('email', ''),
+                        'date_of_birth': request.data.get('date_of_birth', '')
                         }
         serializer_data= PatientMasterTableSerializer(user_obj,data = updated_data) 
 
@@ -164,41 +164,20 @@ class PatientDetailsUpdate(APIView):
 
 
 class ConsultantDiseaseTableView(APIView):
-        
-    def get(self, request, **kwargs):
-        user_obj = ConsultantDiseaseTable.objects.all()
-        serlizer_data = ConsultantDiseaseTableSerializer(user_obj, many=True)
-        disease_id = user_obj[0].disease_id
-        specality_obj = SpecalityMastertable.objects.filter(disease_id = disease_id).values()
-        serlizer_data2 = SpecalityMastertableSerializer(specality_obj, many=True)
-        print(serlizer_data2)
-        return Response(serlizer_data.data)
 
-    
-    def post(self, request, **kwargs):
-        disease_id = request.post('disease_id')
-        user_obj = ConsultantDiseaseTable.objects.all()
-        consultant_data = ConsultantDiseaseTableSerializer(user_obj, many=True)        
-        specality_obj = SpecalityMastertable.objects.filter(disease_id = disease_id).values()
-        serlizer_data2 = SpecalityMastertableSerializer(specality_obj, many=True)
-        return Response(serlizer_data2.data, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request, **kwargs):
+        rows = ConsultantDiseaseTable.objects.all()
+        serlizer_data = ConsultantDiseaseTableSerializer(rows, many=True)
+        return Response(serlizer_data.data)
 
 
 class SpecalityDoctorsView(APIView):
+    def get(self, request, **kwargs):
+        rows =  SpecalityMastertable.objects.all()
+        serlizer_data = SpecalityMastertableSerializer(rows, many=True)
+        return Response(serlizer_data.data)    
 
-    def get (self, request, **kwargs):
-        specality_id = kwargs.get('specality_id', '')
-        user_obj = DoctorsMastertable.objects.filter(specality_id= specality_id)
-        serlizer_data = DoctorsMastertableSerializer(user_obj, many=True)
-        return Response(serlizer_data.data)
 
-    def post(self, request, **kwargs):
-        serlizer_data = SpecalityMastertableSerializer(data=request.data[0])
-
-        if serlizer_data.is_valid():
-            serlizer_data.save()
-            return Response(serlizer_data.data, status=status.HTTP_201_CREATED)
-        return Response(serlizer_data.dtaa, staus=status.HTTP_400_BAD_REQUEST)
 
 class DoctorSlotsView(APIView):
 
