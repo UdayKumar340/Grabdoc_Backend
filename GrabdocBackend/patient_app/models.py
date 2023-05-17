@@ -60,49 +60,4 @@ class SpecalityMastertable(models.Model):
     class Meta:
         db_table = 'specality_master_table'
 
-class DoctorsMastertable(models.Model):
-
-    first_name = models.CharField(max_length = 200, null=True, blank = True)
-    last_name = models.CharField(max_length = 200, null = True, blank = True)
-    experience = models.FloatField(null = True, blank = True)
-    address1 = models.CharField(max_length = 300, null = True, blank = True)
-    city = models.CharField(max_length = 100, null =True, blank = True)
-    state = models.CharField(max_length = 50, null = True, blank = True)
-    zip_code = models.CharField(max_length = 100, null = True, blank = True)
-    
-    class Meta:
-        db_table = 'doctors_master_table'
-
-
-class TimeSlottable(models.Model):
-
-    doctor_id = models.AutoField(unique = True, primary_key = True)
-    start_time = models.TimeField('Show start time')
-    duration = models.DurationField('Duration od time')
-    end_time = models.TimeField("end time", blank=True, null=True)
-
-    class Meta:
-        db_table = 'doctors_time_slots_table'
-
-# class Booking_Table(models.Model):
-
-#     booking_iD = models.IntegerField()
-#     user_ID = models.AutoField(primary_key=True)
-#     physician_ID = models.IntegerField()
-#     booking_date = models.DateField()
-#     slot_time = models.TimeField()
-#     patient_ID = models.IntegerField()
-#     specality_ID = models.CharField(max_length=20) 
-
-
-# class Patient_Record_table(models.Model):
-#     patient_record_ID = models.CharField(max_length=20)
-#     patient_ID = models.IntegerField()
-#     RecordName = models.CharField(max_length=20)
-#     Date = models.DateField(auto_now_add=False, auto_now=False, null= True)
-#     file_name = models.CharField(max_length=20)
-#     file_path_upload = models.FileField(upload_to='documents/%Y/%m/%d/')
-#     upadted_date = models.DateField()
-
-
 
