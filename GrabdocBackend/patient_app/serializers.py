@@ -44,29 +44,7 @@ class SpecalityMastertableSerializer(serializers.ModelSerializer):
         model = SpecalityMastertable
         fields =['id','specality_name', 'specality_description']
 
-class DoctorsMastertableSerializer(serializers.ModelSerializer):
 
-    class Meta:
-        model = DoctorsMastertable
-        fields = '__all__'
-
-    def create(self, validated_data):
-        return super().create(validated_data)
-    
-    def update(self, instance, validated_data):
-        return super().update(instance, validated_data)
-
-class TimeSlottableSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = TimeSlottable
-        fields = '__all__'
-
-    def create(self, validated_data):
-        return super().create(validated_data)
-    
-    def update(self, instance, validated_data):
-        return super().update(instance, validated_data)
 
 
 
