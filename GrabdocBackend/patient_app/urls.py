@@ -14,6 +14,11 @@ urlpatterns = [
 
     path('specalities/', SpecalityDoctorsView.as_view()),
 
+    path('doctors/', DoctorsView.as_view()),
+
+    path('doctors/<int:doctor_id>', DoctorsView.as_view()),
+    
+
 
 
     
