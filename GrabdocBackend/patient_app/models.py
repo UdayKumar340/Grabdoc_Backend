@@ -34,18 +34,6 @@ class PatientMasterTable(AbstractUser):
 #    objects = PatientmasterManager()
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 class ConsultantDiseaseTable(models.Model):
     disease_type = models.CharField(max_length = 300, null = True, blank = True)
 
@@ -61,3 +49,11 @@ class SpecalityMastertable(models.Model):
         db_table = 'specality_master_table'
 
 
+class Doctors(models.Model):
+    name = models.CharField(max_length= 200, null=True, blank = True)
+    specality =  models.ForeignKey(SpecalityMastertable, on_delete=models.CASCADE)
+    experience = models.IntegerField(null = True, blank = True)
+    online = models.BooleanField()
+    language = models.CharField(max_length= 200, null=True, blank = True)
+    location = models.CharField(max_length= 200, null=True, blank = True)
+    about_doctor = models.TextField(null=True, blank = True)
