@@ -164,6 +164,8 @@ class PatientDetailsUpdate(APIView):
 
 
 class ConsultantDiseaseTableView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, **kwargs):
         rows = ConsultantDiseaseTable.objects.all()
@@ -172,11 +174,28 @@ class ConsultantDiseaseTableView(APIView):
 
 
 class SpecalityDoctorsView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, **kwargs):
         rows =  SpecalityMastertable.objects.all()
         serlizer_data = SpecalityMastertableSerializer(rows, many=True)
         return Response(serlizer_data.data)    
 
+
+class DoctorsView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self,request,doctor_id=None):
+        if doctor_id is None:
+            rows =  Doctors.objects.all()
+            serlizer_data = DoctorsSerializer(rows, many=True)
+            return Response(serlizer_data.data)
+        else:
+            row =  Doctors.objects.get(id = doctor_id)
+            serlizer_data = DoctorsSerializer(row)
+            return Response(serlizer_data.data)
 
 
 
