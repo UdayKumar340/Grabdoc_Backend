@@ -179,24 +179,6 @@ class SpecalityDoctorsView(APIView):
 
 
 
-class DoctorSlotsView(APIView):
-
-    def get (self, request, **kwargs):
-        doctor_id = kwargs.get('doctor_id', '')
-        doctor_obj = DoctorsMastertable.objects.filter(doctor_id = doctor_id).values()
-        doctor_data = DoctorsMastertableSerializer(doctor_obj, many=True)
-        slot_obj = TimeSlottable.objects.filter(doctor_id = doctor_id).values()
-        timming_slots_li = []
-        start_time = slot_obj['start_time']
-        end_time = slot_obj['end_time']
-        duration = slot_obj['duration']
-        start_time = datetime.datetime.strptime(start_time, '%H:%M')
-        end_time = datetime.datetime.strptime(end_time, '%H:%M')
-        while start_time<=end_time:
-            timming_slots_li.append(start_time.time())
-            start_time+=datetime.timedelta(mintiues = duration)
-
-        return Response(doctor_data.data)
 
 
 
