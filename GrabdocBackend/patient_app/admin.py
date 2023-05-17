@@ -12,5 +12,4 @@ admin.site.register(ConsultantDiseaseTable)
 
 admin.site.register(SpecalityMastertable)
 
-admin.site.register(DoctorsMastertable)
 
