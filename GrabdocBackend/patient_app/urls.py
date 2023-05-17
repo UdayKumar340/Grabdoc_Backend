@@ -16,22 +16,6 @@ urlpatterns = [
 
 
 
-
-
-
-
-    
-
-
-
-
-    path('physician/<int:doctor_id>/', DoctorSlotsView.as_view()),
-
-
-
-    #path('physician/<int:doctor_id>/slotbooking/', DoctorSlotsView.as_view()),
-    
-
     
 
 ]
