@@ -51,4 +51,7 @@ class DoctorsSerializer(serializers.ModelSerializer):
         model = Doctors
         fields = ['id','name','specality','experience','online','language','location','about_doctor']
 
-
+class DoctorsScheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DoctorsSchedule
+        fields = ['doctor_id','time_slot']
