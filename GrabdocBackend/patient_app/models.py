@@ -57,3 +57,8 @@ class Doctors(models.Model):
     language = models.CharField(max_length= 200, null=True, blank = True)
     location = models.CharField(max_length= 200, null=True, blank = True)
     about_doctor = models.TextField(null=True, blank = True)
+
+
+class DoctorsSchedule(models.Model):
+    doctor = models.ForeignKey(Doctors, on_delete=models.CASCADE)
+    time_slot = models.DateTimeField(null=True)
