@@ -197,6 +197,14 @@ class DoctorsView(APIView):
             serlizer_data = DoctorsSerializer(row)
             return Response(serlizer_data.data)
 
+class Doctors_slot_View(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, **kwargs):
+        rows =  DoctorsSchedule.objects.all()
+        serlizer_data = DoctorsScheduleSerializer(rows, many=True)
+        return Response(serlizer_data.data) 
 
 
 
