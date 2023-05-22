@@ -19,6 +19,8 @@ urlpatterns = [
     path('doctors/<int:doctor_id>', DoctorsView.as_view()),
 
     path('doctor_time_slots/<int:doctor_id>',Doctors_slot_View.as_view()),
+
+    path('patient-summary/<int:patient_id>',PatientSummaryView.as_view()),
        
 
 ]
