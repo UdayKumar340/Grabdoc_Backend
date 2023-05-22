@@ -15,3 +15,6 @@ admin.site.register(SpecalityMastertable)
 admin.site.register(Doctors)
 
 admin.site.register(DoctorsSchedule)
+
+
+admin.site.register(PatientSummary)
