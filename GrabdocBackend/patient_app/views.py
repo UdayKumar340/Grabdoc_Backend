@@ -149,7 +149,15 @@ class PatientDetailsUpdate(APIView):
                         'gendar': request.data.get('gendar', ''),
                         'email': request.data.get('email', ''),
                         'date_of_birth': request.data.get('date_of_birth', '')
+                    
                         }
+        if 'height' in request.data:
+            updated_data['height']=request.data.get('height')
+        if 'weight' in request.data:
+            updated_data['weight']=request.data.get('weight')
+        if 'blood_group' in request.data:
+            updated_data['blood_group']=request.data.get('blood_group')
+
         serializer_data= PatientMasterTableSerializer(user_obj,data = updated_data) 
 
         if serializer_data.is_valid():
@@ -205,6 +213,44 @@ class Doctors_slot_View(APIView):
         rows =  DoctorsSchedule.objects.all()
         serlizer_data = DoctorsScheduleSerializer(rows, many=True)
         return Response(serlizer_data.data) 
+
+
+class PatientSummaryView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
+
+    def get(self,request,patient_id):
+        row =  PatientSummary.objects.filter(patient_id = patient_id).first()
+        
+        if row is not None:
+
+            serlizer_data = PatientSummarySerializer(row)
+            return Response(serlizer_data.data)
+        else:
+            rdata = {"summary":""}
+            return Response(rdata)
+    
+    def post(self, request,patient_id):
+
+
+        updated_data ={'patient_id': patient_id,
+
+                        'summary': request.data.get('summary', '')
+
+        }
+        print(updated_data)
+    
+
+        serlizer_data = PatientSummarySerializer(data=updated_data)
+
+        if serlizer_data.is_valid():
+            summary_obj = PatientSummary.objects.update_or_create(pk = patient_id,summary= serlizer_data.data['summary'])
+            summary_obj.save()
+            return Response(serlizer_data.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 
