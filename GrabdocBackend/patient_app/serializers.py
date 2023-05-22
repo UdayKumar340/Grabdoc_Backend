@@ -22,7 +22,7 @@ class PatientMasterTableSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PatientMasterTable
-        fields = ['id',"patient_first_name","patient_last_name","gendar","email",'date_of_birth'] 
+        fields = ['id',"patient_first_name","patient_last_name","gendar","email",'date_of_birth','height','weight','blood_group'] 
     
     def create(self, validated_data):
         return super().create(validated_data)
@@ -55,3 +55,9 @@ class DoctorsScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = DoctorsSchedule
         fields = ['doctor_id','time_slot']
+
+
+class PatientSummarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PatientSummary
+        fields = ['summary','patient_id']
