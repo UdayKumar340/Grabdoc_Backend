@@ -29,9 +29,17 @@ class PatientMasterTable(AbstractUser):
     email = models.CharField(max_length= 200, null=True, blank = True)
     date_of_birth = models.DateField(null = True, blank = True)
     username = models.CharField(('Phone Number'), validators=[phone_regex], max_length=17, unique=True)
+    height = models.IntegerField(null = True, blank = True)
+    weight = models.IntegerField(null = True, blank = True)
+    blood_group = models.CharField(max_length=10,null = True, blank = True)
+
     
+
     USERNAME_FIELD = 'username'
 #    objects = PatientmasterManager()
+#    def __str__(self):
+#        return self.patient_last_name
+
 
 
 class ConsultantDiseaseTable(models.Model):
@@ -62,3 +70,8 @@ class Doctors(models.Model):
 class DoctorsSchedule(models.Model):
     doctor = models.ForeignKey(Doctors, on_delete=models.CASCADE)
     time_slot = models.DateTimeField(null=True)
+
+
+class PatientSummary(models.Model):
+    summary = models.TextField(null=True, blank = True)
+    patient = models.OneToOneField(PatientMasterTable, on_delete=models.CASCADE,primary_key=True)
