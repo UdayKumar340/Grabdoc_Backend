@@ -61,3 +61,9 @@ class PatientSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = PatientSummary
         fields = ['summary','patient_id']
+
+
+class PatientScheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PatientSchedule
+        fields = ["doctors_schedule_id","patient_id"]
