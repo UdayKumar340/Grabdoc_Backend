@@ -235,24 +235,49 @@ class PatientSummaryView(APIView):
     def post(self, request,patient_id):
 
 
-        updated_data ={'patient_id': patient_id,
-
-                        'summary': request.data.get('summary', '')
-
-        }
+        updated_data ={'patient_id': patient_id,'summary': request.data.get('summary', '')}
         print(updated_data)
     
 
         serlizer_data = PatientSummarySerializer(data=updated_data)
+        print("what data coming",serlizer_data)
 
         if serlizer_data.is_valid():
-            summary_obj = PatientSummary.objects.update_or_create(pk = patient_id,summary= serlizer_data.data['summary'])
+            data ={"summary":serlizer_data.data['summary']}
+            summary_obj, created = PatientSummary.objects.update_or_create(pk = patient_id, defaults= data) #summary= serlizer_data.data['summary']
             summary_obj.save()
             return Response(serlizer_data.data, status=status.HTTP_201_CREATED)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
+class PatientScheduleView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self,request):
+        rows = PatientSchedule.objects.filter(patient = request.user)
+        serlizer_data = PatientScheduleSerializer(rows, many=True)
+        return Response(serlizer_data.data)
+    
+    def post(self, request):
+        user_obj = request.user
+        print(request.data)
+        
+        updated_data ={'patient_id': user_obj.id,'doctors_schedule_id': request.data.get('doctors_schedule_id', '')}
+
+        serializer_data= PatientScheduleSerializer(data = updated_data) 
+
+        if serializer_data.is_valid():
+            summary_obj, created = PatientSchedule.objects.update_or_create(patient_id = user_obj.id, doctors_schedule_id = request.data.get('doctors_schedule_id', ''))
+            return Response({"success":True}, status=status.HTTP_201_CREATED)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)    
+
+
+
+
+        
 
 
 
