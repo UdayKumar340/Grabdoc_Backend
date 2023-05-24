@@ -18,3 +18,6 @@ admin.site.register(DoctorsSchedule)
 
 
 admin.site.register(PatientSummary)
+
+
+admin.site.register(PatientSchedule)
