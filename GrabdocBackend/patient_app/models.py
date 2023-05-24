@@ -37,8 +37,8 @@ class PatientMasterTable(AbstractUser):
 
     USERNAME_FIELD = 'username'
 #    objects = PatientmasterManager()
-#    def __str__(self):
-#        return self.patient_last_name
+#   def __str__(self):
+#        return (self.patient_first_name,self.patient_last_name)
 
 
 
@@ -67,6 +67,7 @@ class Doctors(models.Model):
     about_doctor = models.TextField(null=True, blank = True)
 
 
+
 class DoctorsSchedule(models.Model):
     doctor = models.ForeignKey(Doctors, on_delete=models.CASCADE)
     time_slot = models.DateTimeField(null=True)
@@ -75,3 +76,12 @@ class DoctorsSchedule(models.Model):
 class PatientSummary(models.Model):
     summary = models.TextField(null=True, blank = True)
     patient = models.OneToOneField(PatientMasterTable, on_delete=models.CASCADE,primary_key=True)
+
+class PatientSchedule(models.Model):
+    doctors_schedule = models.ForeignKey(DoctorsSchedule, on_delete=models.CASCADE)
+    patient = models.ForeignKey(PatientMasterTable, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('doctors_schedule', 'patient',)
+
+
