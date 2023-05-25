@@ -67,3 +67,10 @@ class PatientScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = PatientSchedule
         fields = ["doctors_schedule_id","patient_id"]
+
+
+class FamilyMemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FamilyMember
+        fields = ['profile_picture','patient_id','first_name','last_name','gender','date_of_birth','relationship']
+
