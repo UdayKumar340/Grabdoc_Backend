@@ -23,6 +23,10 @@ urlpatterns = [
     path('patient-summary/<int:patient_id>',PatientSummaryView.as_view()),
 
     path('patient-schedule/', PatientScheduleView.as_view()),
+
+    path('family-members/', FamilyMemberView.as_view()),
+
+    path('file-upload/', FileUploadView.as_view()),
        
 
 ]
