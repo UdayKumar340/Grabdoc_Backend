@@ -12,6 +12,12 @@ from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
+from django.conf import settings
+
+import os 
+import uuid
+
+
 #authentication_classes = [TokenAuthentication]
 #permission_classes = [IsAuthenticated]
 
@@ -276,6 +282,72 @@ class PatientScheduleView(APIView):
 
 
 
+class FamilyMemberView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        members = FamilyMember.objects.filter(patient = request.user)
+        serlizer_data = FamilyMemberSerializer(members, many=True)
+        return Response(serlizer_data.data)
+
+    
+    def post(self, request):
+        user_obj = request.user
+        print(request.data)
+        
+        updated_data ={'patient_id':user_obj.id,
+                        'first_name': request.data.get('first_name', ''),
+                        'last_name': request.data.get('last_name', ''),
+                        'gender': request.data.get('gender', ''),
+                        'relationship': request.data.get('relationship', ''),
+                        'date_of_birth': request.data.get('date_of_birth', ''),
+                        'profile_picture': request.data.get('profile_picture', '')
+                    
+                    }
+
+        serializer_data= FamilyMemberSerializer(data = updated_data) 
+
+        if serializer_data.is_valid():
+            data = {'gender': request.data.get('gender', ''),
+                        'relationship': request.data.get('relationship', ''),
+                        'date_of_birth': request.data.get('date_of_birth', ''),
+                        'profile_picture': request.data.get('profile_picture', '')
+
+                        }
+            fm_obj, created = FamilyMember.objects.update_or_create(patient_id = user_obj.id, first_name = request.data.get('first_name', ''), last_name= request.data.get('last_name', ''), defaults= data)
+            return Response({"success":True}, status=status.HTTP_201_CREATED)
+        else:
+            print(serializer_data.errors)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        
+class FileUploadView(APIView):
+
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, format='jpg'):
+
+        up_file = request.FILES['file']
+        media_id = str(uuid.uuid4())
+        filename, file_extension = os.path.splitext(up_file.name)
+
+        unique_file_name = media_id  + file_extension
+
+        file_path = settings.MEDIA_ROOT+"/" + unique_file_name
+
+        print(file_path)
+
+
+        destination = open(file_path, 'wb+')
+        for chunk in up_file.chunks():
+            destination.write(chunk)
+        destination.close()
+        rdata = {"success":True, "file_name":unique_file_name}
+
+        return Response(rdata, status.HTTP_201_CREATED)
+    
 
         
 
