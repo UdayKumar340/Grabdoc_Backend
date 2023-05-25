@@ -85,3 +85,24 @@ class PatientSchedule(models.Model):
         unique_together = ('doctors_schedule', 'patient',)
 
 
+class FamilyMember(models.Model):
+    patient = models.ForeignKey(PatientMasterTable, on_delete=models.CASCADE)
+    profile_picture = models.CharField(max_length= 50,null=True, blank=True)
+    first_name = models.CharField(max_length= 50)
+    last_name = models.CharField(max_length= 50)
+    gender = models.CharField(max_length= 10, null=True, blank = True)
+    date_of_birth = models.DateField(null = True, blank = True)
+    relations_choices = (
+        ('Dad','Dad'),
+        ('Mom','Mom'),
+        ('Husband','Husband'),
+        ('Wife','Wife'),
+        ('Sister','Sister'),
+        ('Brother','Brother'),
+        ('Others','Others')
+    
+    )
+    relationship = models.CharField(max_length= 10, choices=relations_choices)
+
+    class Meta:
+        unique_together = ('patient','first_name',"last_name")
