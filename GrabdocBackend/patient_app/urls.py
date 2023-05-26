@@ -27,6 +27,11 @@ urlpatterns = [
     path('family-members/', FamilyMemberView.as_view()),
 
     path('file-upload/', FileUploadView.as_view()),
+
+    path ('medical-records/', MedicalRecordView.as_view()),
+
+    path('patient-schedule-medical-records/<int:patient_schedule_id>',PatientScheduleMedicalRecordView.as_view()),
+
        
 
 ]
