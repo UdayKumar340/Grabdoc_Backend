@@ -32,6 +32,8 @@ class PatientMasterTable(AbstractUser):
     height = models.IntegerField(null = True, blank = True)
     weight = models.IntegerField(null = True, blank = True)
     blood_group = models.CharField(max_length=10,null = True, blank = True)
+    def __str__(self):
+        return f'{self.patient_first_name} {self.patient_last_name}'
 
     
 
@@ -44,6 +46,8 @@ class PatientMasterTable(AbstractUser):
 
 class ConsultantDiseaseTable(models.Model):
     disease_type = models.CharField(max_length = 300, null = True, blank = True)
+    def __str__(self):
+        return self.disease_type
 
     class Meta:
         db_table= 'consultant_disease_table'
@@ -52,6 +56,9 @@ class SpecalityMastertable(models.Model):
 
     specality_name = models.CharField(max_length = 200, null = True, blank = True)
     specality_description = models.CharField(max_length = 400, null = True, blank = True)
+    def __str__(self):
+        return self.specality_name
+   
 
     class Meta:
         db_table = 'specality_master_table'
@@ -65,21 +72,30 @@ class Doctors(models.Model):
     language = models.CharField(max_length= 200, null=True, blank = True)
     location = models.CharField(max_length= 200, null=True, blank = True)
     about_doctor = models.TextField(null=True, blank = True)
+    def __str__(self):
+        return self.name
+
 
 
 
 class DoctorsSchedule(models.Model):
     doctor = models.ForeignKey(Doctors, on_delete=models.CASCADE)
     time_slot = models.DateTimeField(null=True)
+    def __str__(self):
+        return self.doctor.name
 
 
 class PatientSummary(models.Model):
     summary = models.TextField(null=True, blank = True)
     patient = models.OneToOneField(PatientMasterTable, on_delete=models.CASCADE,primary_key=True)
 
+
+
 class PatientSchedule(models.Model):
     doctors_schedule = models.ForeignKey(DoctorsSchedule, on_delete=models.CASCADE)
     patient = models.ForeignKey(PatientMasterTable, on_delete=models.CASCADE)
+    # def __str__(self):
+    #     return self.patient
 
     class Meta:
         unique_together = ('doctors_schedule', 'patient',)
@@ -104,5 +120,30 @@ class FamilyMember(models.Model):
     )
     relationship = models.CharField(max_length= 10, choices=relations_choices)
 
+    def __str__(self):
+        return self.relationship
+
     class Meta:
         unique_together = ('patient','first_name',"last_name")
+
+
+
+class MedicalRecord(models.Model):
+    patient = models.ForeignKey(PatientMasterTable, on_delete=models.CASCADE)
+    family_member = models.ForeignKey(FamilyMember, on_delete=models.CASCADE)
+
+    record_name = models.CharField(max_length= 50)
+
+    file_name = models.CharField(max_length= 50,null=True, blank=True)
+
+    record_date = models.DateField(null = True, blank = True)
+    class Meta:
+        unique_together = ('patient','family_member',"file_name")
+
+class PatientScheduleMedicalRecord(models.Model):
+
+    patient_schedule =  models.ForeignKey(PatientSchedule, on_delete=models.CASCADE)
+
+    medical_record =  models.ForeignKey(MedicalRecord, on_delete=models.CASCADE)
+    class Meta:
+        unique_together = ('patient_schedule','medical_record')
