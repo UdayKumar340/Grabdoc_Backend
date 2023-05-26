@@ -315,7 +315,11 @@ class FamilyMemberView(APIView):
                         'profile_picture': request.data.get('profile_picture', '')
 
                         }
-            fm_obj, created = FamilyMember.objects.update_or_create(patient_id = user_obj.id, first_name = request.data.get('first_name', ''), last_name= request.data.get('last_name', ''), defaults= data)
+            fm_obj, created = FamilyMember.objects.update_or_create(patient_id = user_obj.id, 
+                first_name = request.data.get('first_name', ''),
+                last_name= request.data.get('last_name', ''), defaults= data)
+
+
             return Response({"success":True}, status=status.HTTP_201_CREATED)
         else:
             print(serializer_data.errors)
@@ -347,6 +351,82 @@ class FileUploadView(APIView):
         rdata = {"success":True, "file_name":unique_file_name}
 
         return Response(rdata, status.HTTP_201_CREATED)
+
+class MedicalRecordView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
+    def get(self,request):
+        records = MedicalRecord.objects.filter(patient = request.user)
+        serlizer_data = MedicalRecordSerializer(records, many=True)
+        return Response(serlizer_data.data)
+
+
+    
+    def post(self, request):
+        user_obj = request.user
+        print(request.data)
+        
+        updated_data ={'patient_id':user_obj.id,
+                        'family_member_id': request.data.get('family_member_id', ''),
+                        'record_name': request.data.get('record_name', ''),
+                        'file_name': request.data.get('file_name', ''),
+                        'record_date': request.data.get('record_date', ''),
+                    }
+        print(updated_data)
+
+        serializer_data= MedicalRecordSerializer(data = updated_data)
+
+        if serializer_data.is_valid():
+            data = {'record_name': request.data.get('record_name', ''),
+                        'record_date': request.data.get('record_date', ''),
+                        }
+
+            print(data)
+            fm_obj, created = MedicalRecord.objects.update_or_create(patient_id = user_obj.id,
+
+                family_member_id = request.data.get('family_member_id', ''),
+                file_name= request.data.get('file_name', ''), defaults= data)
+
+
+            return Response({"success":True}, status=status.HTTP_201_CREATED)
+        else:
+            print(serializer_data.errors)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class PatientScheduleMedicalRecordView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
+    def get(self,request,patient_schedule_id):
+
+        records = PatientScheduleMedicalRecord.objects.filter(patient_schedule_id =patient_schedule_id)
+        serlizer_data = PatientScheduleMedicalRecordSerializer(records, many=True)
+        return Response(serlizer_data.data)
+
+
+    def post(self, request,patient_schedule_id):
+        serlizer_data = PatientScheduleMedicalRecordSerializer(data=request.data, many=True)
+
+
+        if serlizer_data.is_valid():
+            records = PatientScheduleMedicalRecord.objects.filter(patient_schedule_id = patient_schedule_id) #request.data[0]['patient_schedule_id']
+            records.delete()
+            for r in request.data:
+                patient_schedule_id = r['patient_schedule_id']
+                medical_record_id = r['medical_record_id']
+
+                pm_obj = PatientScheduleMedicalRecord(patient_schedule_id = patient_schedule_id, medical_record_id = medical_record_id)
+                pm_obj.save()
+            return Response({"success":True}, status=status.HTTP_201_CREATED)
+        else:
+            print(serializer_data.errors)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    
     
 
         
