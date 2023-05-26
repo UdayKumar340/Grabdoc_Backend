@@ -23,3 +23,7 @@ admin.site.register(PatientSummary)
 admin.site.register(PatientSchedule)
 
 admin.site.register(FamilyMember)
+
+admin.site.register(MedicalRecord)
+
+admin.site.register(PatientScheduleMedicalRecord)
