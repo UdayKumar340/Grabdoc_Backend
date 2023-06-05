@@ -94,8 +94,9 @@ class PatientSummary(models.Model):
 class PatientSchedule(models.Model):
     doctors_schedule = models.ForeignKey(DoctorsSchedule, on_delete=models.CASCADE)
     patient = models.ForeignKey(PatientMasterTable, on_delete=models.CASCADE)
-    # def __str__(self):
-    #     return self.patient
+    def __str__(self):
+        return f'{self.doctors_schedule} {self.patient}'
+        
 
     class Meta:
         unique_together = ('doctors_schedule', 'patient',)
@@ -137,6 +138,14 @@ class MedicalRecord(models.Model):
     file_name = models.CharField(max_length= 50,null=True, blank=True)
 
     record_date = models.DateField(null = True, blank = True)
+    def __str__(self):
+        return f'{self.family_member} {self.record_name} {self.record_date}'
+    
+
+
+
+
+
     class Meta:
         unique_together = ('patient','family_member',"file_name")
 
@@ -145,5 +154,10 @@ class PatientScheduleMedicalRecord(models.Model):
     patient_schedule =  models.ForeignKey(PatientSchedule, on_delete=models.CASCADE)
 
     medical_record =  models.ForeignKey(MedicalRecord, on_delete=models.CASCADE)
+    def __str__(self):
+        return f'{self.patient_schedule} {self.medical_record}'
+
+
+
     class Meta:
         unique_together = ('patient_schedule','medical_record')
