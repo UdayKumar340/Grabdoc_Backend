@@ -19,10 +19,13 @@ class MobileRegSerializer(serializers.ModelSerializer):
 
 
 class PatientMasterTableSerializer(serializers.ModelSerializer):
+    phonenumber = serializers.CharField(source='username',read_only=True)
+
 
     class Meta:
         model = PatientMasterTable
-        fields = ['id',"patient_first_name","patient_last_name","gendar","email",'date_of_birth','height','weight','blood_group'] 
+        read_only_fields = ["phonenumber",'id',]
+        fields = ['id',"patient_first_name","patient_last_name","gendar","email",'date_of_birth','height','weight','blood_group',"phonenumber"] 
     
     def create(self, validated_data):
         return super().create(validated_data)
@@ -47,14 +50,22 @@ class SpecalityMastertableSerializer(serializers.ModelSerializer):
 
 class DoctorsSerializer(serializers.ModelSerializer):
 
+    specality_name = serializers.CharField(source='specality.specality_name', read_only=True)
+ 
+
     class Meta:
         model = Doctors
-        fields = ['id','name','specality','experience','online','language','location','about_doctor']
+        fields = ['id','name','specality_id','specality_name','experience','online','language','location','about_doctor']
 
 class DoctorsScheduleSerializer(serializers.ModelSerializer):
+
+    doctor_name = serializers.CharField(source='doctor.name',read_only=True)
+
+
+
     class Meta:
         model = DoctorsSchedule
-        fields = ['doctor_id','time_slot']
+        fields = ['doctor_id','doctor_name','time_slot']
 
 
 class PatientSummarySerializer(serializers.ModelSerializer):
@@ -80,6 +91,11 @@ class MedicalRecordSerializer(serializers.ModelSerializer):
         fields = ["patient_id",'family_member_id','record_name','file_name','record_date']
 
 class PatientScheduleMedicalRecordSerializer(serializers.ModelSerializer):
+
+#    patient_schedule = serializers.CharField(source='patient_schedule.patient_schedule', read_only=True)
+    
+
+
     class Meta:
         model = PatientScheduleMedicalRecord
         fields = ['patient_schedule_id','medical_record_id']
