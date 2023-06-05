@@ -171,7 +171,7 @@ class PatientDetailsUpdate(APIView):
             serializer_data.save()
             return Response(serializer_data.data)
         else:
-            print(serializer_data)
+            print(serializer_data.errors)
 
             return Response({'status':400 , 'error':" Validition Failed"})
 
