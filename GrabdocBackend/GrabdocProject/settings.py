@@ -138,3 +138,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'patient_app.PatientMasterTable'
 
+REST_FRAMEWORK = {
+    'EXCEPTION_HANDLER': 'patient_app.views.custom_exception_handler'
+}
