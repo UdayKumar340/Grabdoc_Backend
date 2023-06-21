@@ -61,6 +61,9 @@ class MobileRegView(APIView):
         print(serializer_data.errors)
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST) 
 
+
+
+
 class verifiyOtp(APIView):
     def post (self, request):
         try:
@@ -123,6 +126,7 @@ class verifiyOtp(APIView):
             print(e)
         
         return Response ({'status':404 , 'error':"someting went worng"})
+
 
 
 class PatientLoginView(APIView):
@@ -203,6 +207,7 @@ class PatientDetailsUpdate(APIView):
 
 
 
+
 class ConsultantDiseaseTableView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -213,6 +218,7 @@ class ConsultantDiseaseTableView(APIView):
         return Response(serlizer_data.data)
 
 
+
 class SpecalityDoctorsView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -221,6 +227,7 @@ class SpecalityDoctorsView(APIView):
         rows =  SpecalityMastertable.objects.all()
         serlizer_data = SpecalityMastertableSerializer(rows, many=True)
         return Response(serlizer_data.data)    
+
 
 
 class DoctorsView(APIView):
@@ -236,6 +243,8 @@ class DoctorsView(APIView):
             row =  Doctors.objects.get(id = doctor_id)
             serlizer_data = DoctorsSerializer(row)
             return Response(serlizer_data.data)
+
+
 
 class Doctors_slot_View(APIView):
     authentication_classes = [TokenAuthentication]
@@ -370,6 +379,11 @@ class FamilyMemberView(APIView):
         except  Exception as e:
             print(e)
             return Response ({'status':404 , 'error':"FamilyMemberView server error"})  
+
+
+
+
+
         
 class FileUploadView(APIView):
 
@@ -399,6 +413,11 @@ class FileUploadView(APIView):
         except  Exception as e:
             print(e)
             return Response ({'status':404 , 'error':"FileUploadView server error"})  
+
+
+
+
+
 
 class MedicalRecordView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -447,6 +466,10 @@ class MedicalRecordView(APIView):
         except  Exception as e:
             print(e)
             return Response ({'status':404 , 'error':"MedicalRecordView server error"})  
+
+
+
+
 
 class PatientScheduleMedicalRecordView(APIView):
     authentication_classes = [TokenAuthentication]
