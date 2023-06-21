@@ -55,7 +55,7 @@ class DoctorsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Doctors
-        fields = ['id','name','specality_id','specality_name','experience','online','language','location','about_doctor']
+        fields = ['id','name',"profile_picture",'specality_id','specality_name','experience','designation','online','language','location','about_doctor',"fee"]
 
 class DoctorsScheduleSerializer(serializers.ModelSerializer):
 
@@ -75,9 +75,16 @@ class PatientSummarySerializer(serializers.ModelSerializer):
 
 
 class PatientScheduleSerializer(serializers.ModelSerializer):
+    doctors_name = serializers.CharField(source='doctors_schedule.doctor',read_only=True)
+
+    patient_first_name = serializers.CharField(source='patient.patient_first_name',read_only=True)
+    patient_last_name = serializers.CharField(source='patient.patient_last_name',read_only=True)
+
+
+
     class Meta:
         model = PatientSchedule
-        fields = ["doctors_schedule_id","patient_id"]
+        fields = ["doctors_schedule_id","doctors_name","patient_id",'patient_first_name',"patient_last_name"]
 
 
 class FamilyMemberSerializer(serializers.ModelSerializer):
@@ -85,10 +92,20 @@ class FamilyMemberSerializer(serializers.ModelSerializer):
         model = FamilyMember
         fields = ['profile_picture','patient_id','first_name','last_name','gender','date_of_birth','relationship']
 
+
+
 class MedicalRecordSerializer(serializers.ModelSerializer):
+    
+    family_menber_name = serializers.CharField(source='family_member.relationship',read_only=True)
+
+
     class Meta:
         model = MedicalRecord
-        fields = ["patient_id",'family_member_id','record_name','file_name','record_date']
+        fields = ["patient_id",'family_member_id','family_menber_name','record_name','file_name','record_date']
+
+
+
+
 
 class PatientScheduleMedicalRecordSerializer(serializers.ModelSerializer):
 
@@ -99,3 +116,9 @@ class PatientScheduleMedicalRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = PatientScheduleMedicalRecord
         fields = ['patient_schedule_id','medical_record_id']
+
+
+class ReviewsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reviews
+        fields = ['doctor_id','patient_id','comment','rating','review_date']
