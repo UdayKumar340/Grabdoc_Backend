@@ -16,10 +16,29 @@ from django.conf import settings
 
 import os 
 import uuid
-
+from rest_framework.views import exception_handler
 
 #authentication_classes = [TokenAuthentication]
 #permission_classes = [IsAuthenticated]
+
+
+def custom_exception_handler(exc, context):
+    # Call REST framework's default exception handler first,
+    # to get the standard error response.
+    response = exception_handler(exc, context)
+    print("exception all")
+
+    # Now add the HTTP status code to the response.
+    if response is not None:
+        response.data['status_code'] = response.status_code
+
+    return response
+
+
+
+
+
+
 
 
 
@@ -38,7 +57,7 @@ class MobileRegView(APIView):
             return Response(response_data, status=status.HTTP_201_CREATED)
 
 
-        response_data ={"registration_id":None,"success":False,'error_meassege':serializer_data.errors}    
+        response_data ={"registration_id":None,"success":False,'errors':serializer_data.errors,"error_meassege":"validation failed"}    
         print(serializer_data.errors)
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST) 
 
@@ -81,7 +100,7 @@ class verifiyOtp(APIView):
 
         except  Exception as e:
             print(e)
-        return Response({"staus":404,"error":"someting went worng"})
+        return Response({"staus":404,"error_meassege":"someting went worng"})
 
 
     def patch(self, request):
@@ -106,16 +125,6 @@ class verifiyOtp(APIView):
         return Response ({'status':404 , 'error':"someting went worng"})
 
 
-
-
-
-
-
-
-
-
-
-
 class PatientLoginView(APIView):
     
     def get(self, request):
@@ -125,14 +134,25 @@ class PatientLoginView(APIView):
 
     
     def post(self, request):
-        print("New Patient")
-        serlizer_data = PatientMasterTableSerializer(data=request.data[0])
+        try:
+            print("New Patient")
+            serlizer_data = PatientMasterTableSerializer(data=request.data[0])
 
-        if serlizer_data.is_valid():
-            serlizer_data.save()
-            return Response(serlizer_data.data, status=status.HTTP_201_CREATED)
+            if serlizer_data.is_valid():
+                serlizer_data.save()
+                return Response(serlizer_data.data, status=status.HTTP_201_CREATED)
+            else:
 
+                response_data ={"success":False,'errors':serializer_data.errors,"error_meassege":"validation failed"}    
+                print(serializer_data.errors)
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        
+        except  Exception as e:
+            print(e)
+            return Response ({'status':404 , 'error':"patient login view server error"})
 
+        
+        
 
 
 
@@ -147,33 +167,39 @@ class PatientDetailsUpdate(APIView):
         return Response(serlizer_data.data[0])
     
     def post(self, request):
-        user_obj = request.user
-        print(request.data)
-        
-        updated_data ={'patient_first_name': request.data.get('patient_first_name', ''),
-                        'patient_last_name': request.data.get('patient_last_name', ''),
-                        'gendar': request.data.get('gendar', ''),
-                        'email': request.data.get('email', ''),
-                        'date_of_birth': request.data.get('date_of_birth', '')
-                    
-                        }
-        if 'height' in request.data:
-            updated_data['height']=request.data.get('height')
-        if 'weight' in request.data:
-            updated_data['weight']=request.data.get('weight')
-        if 'blood_group' in request.data:
-            updated_data['blood_group']=request.data.get('blood_group')
+        try:
+                
+            user_obj = request.user
+            print(request.data)
+            
+            updated_data ={'patient_first_name': request.data.get('patient_first_name', ''),
+                            'patient_last_name': request.data.get('patient_last_name', ''),
+                            'gendar': request.data.get('gendar', ''),
+                            'email': request.data.get('email', ''),
+                            'date_of_birth': request.data.get('date_of_birth', '')
+                        
+                            }
+            if 'height' in request.data:
+                updated_data['height']=request.data.get('height')
+            if 'weight' in request.data:
+                updated_data['weight']=request.data.get('weight')
+            if 'blood_group' in request.data:
+                updated_data['blood_group']=request.data.get('blood_group')
 
-        serializer_data= PatientMasterTableSerializer(user_obj,data = updated_data) 
+            serializer_data= PatientMasterTableSerializer(user_obj,data = updated_data) 
 
-        if serializer_data.is_valid():
-            print(serializer_data)
-            serializer_data.save()
-            return Response(serializer_data.data)
-        else:
-            print(serializer_data.errors)
-
-            return Response({'status':400 , 'error':" Validition Failed"})
+            if serializer_data.is_valid():
+                print(serializer_data)
+                serializer_data.save()
+                return Response(serializer_data.data)
+            else:
+                response_data ={"success":False,'errors':serializer_data.errors,"error_meassege":"validation failed"}    
+                print(serializer_data.errors)
+                return Response({'status':400 , 'error':" Validition Failed"},response_data, status=status.HTTP_400_BAD_REQUEST)
+                #return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        except  Exception as e:
+            print(e)
+            return Response ({'status':404 , 'error':"PatientDetailsUpdate server error"})       
 
 
 
@@ -240,21 +266,28 @@ class PatientSummaryView(APIView):
     
     def post(self, request,patient_id):
 
+        try:
+            updated_data ={'patient_id': patient_id,'summary': request.data.get('summary', '')}
+            print(updated_data)
+        
 
-        updated_data ={'patient_id': patient_id,'summary': request.data.get('summary', '')}
-        print(updated_data)
-    
+            serlizer_data = PatientSummarySerializer(data=updated_data)
+            print("what data coming",serlizer_data)
 
-        serlizer_data = PatientSummarySerializer(data=updated_data)
-        print("what data coming",serlizer_data)
+            if serlizer_data.is_valid():
+                data ={"summary":serlizer_data.data['summary']}
+                summary_obj, created = PatientSummary.objects.update_or_create(pk = patient_id, defaults= data) #summary= serlizer_data.data['summary']
+                summary_obj.save()
+                return Response(serlizer_data.data, status=status.HTTP_201_CREATED)
+            else:
 
-        if serlizer_data.is_valid():
-            data ={"summary":serlizer_data.data['summary']}
-            summary_obj, created = PatientSummary.objects.update_or_create(pk = patient_id, defaults= data) #summary= serlizer_data.data['summary']
-            summary_obj.save()
-            return Response(serlizer_data.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+                response_data ={"success":False,'errors':serializer_data.errors,"error_meassege":"validation failed"}    
+                print(serializer_data.errors)
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        except  Exception as e:
+            print(e)
+            return Response ({'status':404 , 'error':"PatientSummaryView server error"})                     
+            
 
 
 class PatientScheduleView(APIView):
@@ -267,18 +300,25 @@ class PatientScheduleView(APIView):
         return Response(serlizer_data.data)
     
     def post(self, request):
-        user_obj = request.user
-        print(request.data)
-        
-        updated_data ={'patient_id': user_obj.id,'doctors_schedule_id': request.data.get('doctors_schedule_id', '')}
+        try:
+            user_obj = request.user
+            print(request.data)
+            
+            updated_data ={'patient_id': user_obj.id,'doctors_schedule_id': request.data.get('doctors_schedule_id', '')}
 
-        serializer_data= PatientScheduleSerializer(data = updated_data) 
+            serializer_data= PatientScheduleSerializer(data = updated_data) 
 
-        if serializer_data.is_valid():
-            summary_obj, created = PatientSchedule.objects.update_or_create(patient_id = user_obj.id, doctors_schedule_id = request.data.get('doctors_schedule_id', ''))
-            return Response({"success":True}, status=status.HTTP_201_CREATED)
-        else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)    
+            if serializer_data.is_valid():
+                summary_obj, created = PatientSchedule.objects.update_or_create(patient_id = user_obj.id, doctors_schedule_id = request.data.get('doctors_schedule_id', ''))
+                return Response({"success":True}, status=status.HTTP_201_CREATED)
+            else:
+
+                response_data ={"success":False,'errors':serializer_data.errors,"error_meassege":"validation failed"}    
+                print(serializer_data.errors)
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        except  Exception as e:
+            print(e)
+            return Response ({'status':404 , 'error':"PatientScheduleView server error"})    
 
 
 
@@ -293,38 +333,43 @@ class FamilyMemberView(APIView):
 
     
     def post(self, request):
-        user_obj = request.user
-        print(request.data)
-        
-        updated_data ={'patient_id':user_obj.id,
-                        'first_name': request.data.get('first_name', ''),
-                        'last_name': request.data.get('last_name', ''),
-                        'gender': request.data.get('gender', ''),
-                        'relationship': request.data.get('relationship', ''),
-                        'date_of_birth': request.data.get('date_of_birth', ''),
-                        'profile_picture': request.data.get('profile_picture', '')
-                    
-                    }
-
-        serializer_data= FamilyMemberSerializer(data = updated_data) 
-
-        if serializer_data.is_valid():
-            data = {'gender': request.data.get('gender', ''),
-                        'relationship': request.data.get('relationship', ''),
-                        'date_of_birth': request.data.get('date_of_birth', ''),
-                        'profile_picture': request.data.get('profile_picture', '')
-
+        try:
+            user_obj = request.user
+            print(request.data)
+            
+            updated_data ={'patient_id':user_obj.id,
+                            'first_name': request.data.get('first_name', ''),
+                            'last_name': request.data.get('last_name', ''),
+                            'gender': request.data.get('gender', ''),
+                            'relationship': request.data.get('relationship', ''),
+                            'date_of_birth': request.data.get('date_of_birth', ''),
+                            'profile_picture': request.data.get('profile_picture', '')
+                        
                         }
-            fm_obj, created = FamilyMember.objects.update_or_create(patient_id = user_obj.id, 
-                first_name = request.data.get('first_name', ''),
-                last_name= request.data.get('last_name', ''), defaults= data)
+
+            serializer_data= FamilyMemberSerializer(data = updated_data) 
+
+            if serializer_data.is_valid():
+                data = {'gender': request.data.get('gender', ''),
+                            'relationship': request.data.get('relationship', ''),
+                            'date_of_birth': request.data.get('date_of_birth', ''),
+                            'profile_picture': request.data.get('profile_picture', '')
+
+                            }
+                fm_obj, created = FamilyMember.objects.update_or_create(patient_id = user_obj.id, 
+                    first_name = request.data.get('first_name', ''),
+                    last_name= request.data.get('last_name', ''), defaults= data)
 
 
-            return Response({"success":True}, status=status.HTTP_201_CREATED)
-        else:
-            print(serializer_data.errors)
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+                return Response({"success":True}, status=status.HTTP_201_CREATED)
+            else:
 
+                response_data ={"success":False,'errors':serializer_data.errors,"error_meassege":"validation failed"}    
+                print(serializer_data.errors)
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        except  Exception as e:
+            print(e)
+            return Response ({'status':404 , 'error':"FamilyMemberView server error"})  
         
 class FileUploadView(APIView):
 
@@ -332,25 +377,28 @@ class FileUploadView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, format='jpg'):
+        try:
+            up_file = request.FILES['file']
+            media_id = str(uuid.uuid4())
+            filename, file_extension = os.path.splitext(up_file.name)
 
-        up_file = request.FILES['file']
-        media_id = str(uuid.uuid4())
-        filename, file_extension = os.path.splitext(up_file.name)
+            unique_file_name = media_id  + file_extension
 
-        unique_file_name = media_id  + file_extension
+            file_path = settings.MEDIA_ROOT+"/" + unique_file_name
 
-        file_path = settings.MEDIA_ROOT+"/" + unique_file_name
-
-        print(file_path)
+            print(file_path)
 
 
-        destination = open(file_path, 'wb+')
-        for chunk in up_file.chunks():
-            destination.write(chunk)
-        destination.close()
-        rdata = {"success":True, "file_name":unique_file_name}
+            destination = open(file_path, 'wb+')
+            for chunk in up_file.chunks():
+                destination.write(chunk)
+            destination.close()
+            rdata = {"success":True, "file_name":unique_file_name}
 
-        return Response(rdata, status.HTTP_201_CREATED)
+            return Response(rdata, status.HTTP_201_CREATED)
+        except  Exception as e:
+            print(e)
+            return Response ({'status':404 , 'error':"FileUploadView server error"})  
 
 class MedicalRecordView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -365,36 +413,40 @@ class MedicalRecordView(APIView):
 
     
     def post(self, request):
-        user_obj = request.user
-        print(request.data)
-        
-        updated_data ={'patient_id':user_obj.id,
-                        'family_member_id': request.data.get('family_member_id', ''),
-                        'record_name': request.data.get('record_name', ''),
-                        'file_name': request.data.get('file_name', ''),
-                        'record_date': request.data.get('record_date', ''),
-                    }
-        print(updated_data)
-
-        serializer_data= MedicalRecordSerializer(data = updated_data)
-
-        if serializer_data.is_valid():
-            data = {'record_name': request.data.get('record_name', ''),
-                        'record_date': request.data.get('record_date', ''),
+        try:
+            user_obj = request.user
+            print(request.data)
+            
+            updated_data ={'patient_id':user_obj.id,
+                            'family_member_id': request.data.get('family_member_id', ''),
+                            'record_name': request.data.get('record_name', ''),
+                            'file_name': request.data.get('file_name', ''),
+                            'record_date': request.data.get('record_date', ''),
                         }
+            print(updated_data)
 
-            print(data)
-            fm_obj, created = MedicalRecord.objects.update_or_create(patient_id = user_obj.id,
+            serializer_data= MedicalRecordSerializer(data = updated_data)
 
-                family_member_id = request.data.get('family_member_id', ''),
-                file_name= request.data.get('file_name', ''), defaults= data)
+            if serializer_data.is_valid():
+                data = {'record_name': request.data.get('record_name', ''),
+                            'record_date': request.data.get('record_date', ''),
+                            }
+
+                print(data)
+                fm_obj, created = MedicalRecord.objects.update_or_create(patient_id = user_obj.id,
+
+                    family_member_id = request.data.get('family_member_id', ''),
+                    file_name= request.data.get('file_name', ''), defaults= data)
 
 
-            return Response({"success":True}, status=status.HTTP_201_CREATED)
-        else:
-            print(serializer_data.errors)
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-
+                return Response({"success":True}, status=status.HTTP_201_CREATED)
+            else:
+                response_data ={"success":False,'errors':serializer_data.errors,"error_meassege":"validation failed"}    
+                print(serializer_data.errors)
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        except  Exception as e:
+            print(e)
+            return Response ({'status':404 , 'error':"MedicalRecordView server error"})  
 
 class PatientScheduleMedicalRecordView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -409,26 +461,56 @@ class PatientScheduleMedicalRecordView(APIView):
 
 
     def post(self, request,patient_schedule_id):
-        serlizer_data = PatientScheduleMedicalRecordSerializer(data=request.data, many=True)
+        try:
+            serlizer_data = PatientScheduleMedicalRecordSerializer(data=request.data, many=True)
 
 
-        if serlizer_data.is_valid():
-            records = PatientScheduleMedicalRecord.objects.filter(patient_schedule_id = patient_schedule_id) #request.data[0]['patient_schedule_id']
-            records.delete()
-            for r in request.data:
-                patient_schedule_id = r['patient_schedule_id']
-                medical_record_id = r['medical_record_id']
+            if serlizer_data.is_valid():
+                records = PatientScheduleMedicalRecord.objects.filter(patient_schedule_id = patient_schedule_id) #request.data[0]['patient_schedule_id']
+                records.delete()
+                for r in request.data:
+                    patient_schedule_id = r['patient_schedule_id']
+                    medical_record_id = r['medical_record_id']
 
-                pm_obj = PatientScheduleMedicalRecord(patient_schedule_id = patient_schedule_id, medical_record_id = medical_record_id)
-                pm_obj.save()
-            return Response({"success":True}, status=status.HTTP_201_CREATED)
-        else:
-            print(serializer_data.errors)
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+                    pm_obj = PatientScheduleMedicalRecord(patient_schedule_id = patient_schedule_id, medical_record_id = medical_record_id)
+                    pm_obj.save()
+                return Response({"success":True}, status=status.HTTP_201_CREATED)
+            else:
 
-    
-    
+                response_data ={"success":False,'errors':serializer_data.errors,"error_meassege":"validation failed"}    
+                print(serializer_data.errors)
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        except  Exception as e:
+            print(e)
+            return Response ({'status':404 , 'error':"PatientScheduleMedicalRecordView server error"})
 
+
+class ReviewsView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        try:
+            print(request.data)
+            
+            updated_data ={'patient_id': request.data.get("patient_id", ''),
+                            'doctor_id': request.data.get('doctor_id', ''),
+                            'comment': request.data.get('comment', ''),
+                            'rating': request.data.get('rating', ''),
+                        }
+
+            serializer_data= ReviewsSerializer(data = updated_data) 
+
+            if serializer_data.is_valid():
+                review_obj = Reviews.objects.create(**updated_data)
+                return Response({"success":True,'review_id':review_obj.id}, status=status.HTTP_201_CREATED)
+            else:
+
+                response_data ={"success":False,'errors':serializer_data.errors,"error_meassege":"validation failed"}    
+                print(serializer_data.errors)
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        except  Exception as e:
+            print(e)
+            return Response ({'status':404 , 'error':"ReviewsView server error"})  
         
 
 
