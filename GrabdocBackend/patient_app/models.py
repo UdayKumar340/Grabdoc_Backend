@@ -66,11 +66,14 @@ class SpecalityMastertable(models.Model):
 
 class Doctors(models.Model):
     name = models.CharField(max_length= 200, null=True, blank = True)
+    profile_picture = profile_picture = models.CharField(max_length= 50,null=True, blank=True)
     specality =  models.ForeignKey(SpecalityMastertable, on_delete=models.CASCADE)
     experience = models.IntegerField(null = True, blank = True)
+    designation = models.CharField(max_length= 200, null=True, blank = True)
     online = models.BooleanField()
     language = models.CharField(max_length= 200, null=True, blank = True)
     location = models.CharField(max_length= 200, null=True, blank = True)
+    fee = models.CharField(max_length= 20, null=True, blank = True)
     about_doctor = models.TextField(null=True, blank = True)
     def __str__(self):
         return self.name
@@ -161,3 +164,12 @@ class PatientScheduleMedicalRecord(models.Model):
 
     class Meta:
         unique_together = ('patient_schedule','medical_record')
+
+
+class Reviews(models.Model):
+    doctor = models.ForeignKey(Doctors, on_delete=models.CASCADE)
+    patient = models.ForeignKey(PatientMasterTable, on_delete=models.CASCADE)
+    comment = models.TextField(null=True, blank = True)
+    rating = models.IntegerField(default=0)
+    review_date = models.DateField(auto_now_add=True, blank = True)
+
