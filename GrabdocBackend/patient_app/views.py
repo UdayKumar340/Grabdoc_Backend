@@ -243,6 +243,7 @@ class DoctorsView(APIView):
             row =  Doctors.objects.get(id = doctor_id)
             serlizer_data = DoctorsSerializer(row)
             return Response(serlizer_data.data)
+    
 
 
 
@@ -511,7 +512,13 @@ class PatientScheduleMedicalRecordView(APIView):
 class ReviewsView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
-    def post(self, request):
+
+    def get(self, request,doctor_id=None):
+        review_objs = Reviews.objects.filter(doctor_id=doctor_id)
+        serlizer_data = ReviewsSerializer(review_objs, many=True)
+        return Response(serlizer_data.data)
+
+    def post(self, request,doctor_id=None):
         try:
             print(request.data)
             
