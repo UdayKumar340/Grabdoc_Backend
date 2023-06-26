@@ -34,8 +34,9 @@ urlpatterns = [
     path('patient-schedule-medical-records/<int:patient_schedule_id>',PatientScheduleMedicalRecordView.as_view()),
 
     path('reviews/', ReviewsView.as_view()),
+    path('reviews/<int:doctor_id>', ReviewsView.as_view()),
 
-    
+
        
 
 ]
