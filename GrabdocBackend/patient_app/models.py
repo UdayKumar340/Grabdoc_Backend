@@ -167,7 +167,7 @@ class PatientScheduleMedicalRecord(models.Model):
 
 
 class Reviews(models.Model):
-    doctor = models.ForeignKey(Doctors, on_delete=models.CASCADE)
+    doctor = models.ForeignKey(Doctors, on_delete=models.CASCADE,related_name='reviews_doctor')
     patient = models.ForeignKey(PatientMasterTable, on_delete=models.CASCADE)
     comment = models.TextField(null=True, blank = True)
     rating = models.IntegerField(default=0)
