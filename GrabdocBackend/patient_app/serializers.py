@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from patient_app.models import *
 
+from django.db.models import Avg, F
 
 class MobileRegSerializer(serializers.ModelSerializer):
     class Meta:
@@ -51,11 +52,18 @@ class SpecalityMastertableSerializer(serializers.ModelSerializer):
 class DoctorsSerializer(serializers.ModelSerializer):
 
     specality_name = serializers.CharField(source='specality.specality_name', read_only=True)
+
+    rating = serializers.SerializerMethodField(read_only=True)
+
+    def get_rating(self, obj):
+        return Reviews.objects.filter(doctor=obj).aggregate(avgs=Avg(F('rating'))).get('avgs',None)
+    
+        #return obj.album_set.aggregate(avgs=Avg(F('num_stars'))).get('avgs',None)
  
 
     class Meta:
         model = Doctors
-        fields = ['id','name',"profile_picture",'specality_id','specality_name','experience','designation','online','language','location','about_doctor',"fee"]
+        fields = ['id','name',"profile_picture",'specality_id','specality_name','experience','designation','online','language','location','about_doctor',"fee",'rating']
 
 class DoctorsScheduleSerializer(serializers.ModelSerializer):
 
