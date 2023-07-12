@@ -8,6 +8,7 @@ class MobileRegSerializer(serializers.ModelSerializer):
         model = Mobile_Reg
         fields = ['id','phone_number','device_id','otp' ]
     def create(self, validated_data):
+
         return super().create(validated_data)
     
     def update(self, instance, validated_data):
@@ -15,18 +16,18 @@ class MobileRegSerializer(serializers.ModelSerializer):
 
 
 
+#change PMTS to gus is done
+# patint_id change to user_id  done
 
 
-
-
-class PatientMasterTableSerializer(serializers.ModelSerializer):
+class GrabdocUserSerializer(serializers.ModelSerializer): #PatientMasterTableSerializer
     phonenumber = serializers.CharField(source='username',read_only=True)
 
 
     class Meta:
-        model = PatientMasterTable
+        model = GrabdocUser
         read_only_fields = ["phonenumber",'id',]
-        fields = ['id',"patient_first_name","patient_last_name","gendar","email",'date_of_birth','height','weight','blood_group',"phonenumber"] 
+        fields = ['id',"first_name","last_name","gendar","email",'date_of_birth','height','weight','blood_group',"phonenumber"] 
     
     def create(self, validated_data):
         return super().create(validated_data)
@@ -79,26 +80,26 @@ class DoctorsScheduleSerializer(serializers.ModelSerializer):
 class PatientSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = PatientSummary
-        fields = ['summary','patient_id']
+        fields = ['summary','user_id']
 
 
 class PatientScheduleSerializer(serializers.ModelSerializer):
     doctors_name = serializers.CharField(source='doctors_schedule.doctor',read_only=True)
 
-    patient_first_name = serializers.CharField(source='patient.patient_first_name',read_only=True)
-    patient_last_name = serializers.CharField(source='patient.patient_last_name',read_only=True)
+    patient_first_name = serializers.CharField(source='user.first_name',read_only=True)
+    patient_last_name = serializers.CharField(source='user.last_name',read_only=True)
 
 
 
     class Meta:
         model = PatientSchedule
-        fields = ["doctors_schedule_id","doctors_name","patient_id",'patient_first_name',"patient_last_name"]
+        fields = ["doctors_schedule_id","doctors_name","user_id",'patient_first_name',"patient_last_name"]
 
 
 class FamilyMemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = FamilyMember
-        fields = ['profile_picture','patient_id','first_name','last_name','gender','date_of_birth','relationship']
+        fields = ['profile_picture','user_id','first_name','last_name','gender','date_of_birth','relationship']
 
 
 
@@ -109,7 +110,7 @@ class MedicalRecordSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MedicalRecord
-        fields = ["patient_id",'family_member_id','family_menber_name','record_name','file_name','record_date']
+        fields = ["user_id",'family_member_id','family_menber_name','record_name','file_name','record_date']
 
 
 
@@ -129,4 +130,15 @@ class PatientScheduleMedicalRecordSerializer(serializers.ModelSerializer):
 class ReviewsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reviews
-        fields = ['doctor_id','patient_id','comment','rating','review_date']
+        fields = ['doctor_id','user_id','comment','rating','review_date']
+
+class NotificationSerializer(serializers.ModelSerializer):
+
+    profile_picture= serializers.SerializerMethodField(read_only=True)
+
+    def get_profile_picture(self, obj):
+        return None
+#we need deside notification type which image doctor or system image
+    class Meta:
+        model = Notification
+        fields = ['user_id','notification_text','notification_date','reference_user_id','profile_picture']
