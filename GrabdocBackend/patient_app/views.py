@@ -35,7 +35,7 @@ def custom_exception_handler(exc, context):
     return response
 
 
-
+#fields chages
 
 
 
@@ -85,11 +85,11 @@ class verifiyOtp(APIView):
             if mr_obj.otp == otp:
                 mr_obj.is_phone_verified = True  # this fields add MR model
                 mr_obj.save()
-                patient = PatientMasterTable.objects.filter(username = mr_obj.phone_number).first()
+                patient = GrabdocUser.objects.filter(username = mr_obj.phone_number).first()
 
 
                 if   patient is None:
-                    patient = PatientMasterTable(username = mr_obj.phone_number)
+                    patient = GrabdocUser(username = mr_obj.phone_number)
                     patient.save()
                 print(patient)
                 
@@ -132,15 +132,15 @@ class verifiyOtp(APIView):
 class PatientLoginView(APIView):
     
     def get(self, request):
-        user_obj = PatientMasterTable.objects.all()
-        serlizer_data = PatientMasterTableSerializer(user_obj, many=True)
+        user_obj = GrabdocUser.objects.all()
+        serlizer_data = GrabdocUserSerializer(user_obj, many=True)
         return Response(serlizer_data.data)
 
     
     def post(self, request):
         try:
             print("New Patient")
-            serlizer_data = PatientMasterTableSerializer(data=request.data[0])
+            serlizer_data = GrabdocUserSerializer(data=request.data[0])
 
             if serlizer_data.is_valid():
                 serlizer_data.save()
@@ -167,7 +167,7 @@ class PatientDetailsUpdate(APIView):
     def get(self, request):
         user_obj = request.user
         print(user_obj)
-        serlizer_data = PatientMasterTableSerializer([user_obj], many=True)
+        serlizer_data = GrabdocUserSerializer([user_obj], many=True)
         return Response(serlizer_data.data[0])
     
     def post(self, request):
@@ -176,8 +176,8 @@ class PatientDetailsUpdate(APIView):
             user_obj = request.user
             print(request.data)
             
-            updated_data ={'patient_first_name': request.data.get('patient_first_name', ''),
-                            'patient_last_name': request.data.get('patient_last_name', ''),
+            updated_data ={'first_name': request.data.get('first_name', ''),
+                            'last_name': request.data.get('last_name', ''),
                             'gendar': request.data.get('gendar', ''),
                             'email': request.data.get('email', ''),
                             'date_of_birth': request.data.get('date_of_birth', '')
@@ -190,7 +190,7 @@ class PatientDetailsUpdate(APIView):
             if 'blood_group' in request.data:
                 updated_data['blood_group']=request.data.get('blood_group')
 
-            serializer_data= PatientMasterTableSerializer(user_obj,data = updated_data) 
+            serializer_data= GrabdocUserSerializer(user_obj,data = updated_data) 
 
             if serializer_data.is_valid():
                 print(serializer_data)
@@ -263,8 +263,8 @@ class PatientSummaryView(APIView):
 
 
 
-    def get(self,request,patient_id):
-        row =  PatientSummary.objects.filter(patient_id = patient_id).first()
+    def get(self,request,user_id):#doubt
+        row =  PatientSummary.objects.filter(user_id = user_id).first()
         
         if row is not None:
 
@@ -274,10 +274,10 @@ class PatientSummaryView(APIView):
             rdata = {"summary":""}
             return Response(rdata)
     
-    def post(self, request,patient_id):
+    def post(self, request,user_id):
 
         try:
-            updated_data ={'patient_id': patient_id,'summary': request.data.get('summary', '')}
+            updated_data ={'user_id': user_id,'summary': request.data.get('summary', '')}
             print(updated_data)
         
 
@@ -286,7 +286,7 @@ class PatientSummaryView(APIView):
 
             if serlizer_data.is_valid():
                 data ={"summary":serlizer_data.data['summary']}
-                summary_obj, created = PatientSummary.objects.update_or_create(pk = patient_id, defaults= data) #summary= serlizer_data.data['summary']
+                summary_obj, created = PatientSummary.objects.update_or_create(pk = user_id, defaults= data) #summary= serlizer_data.data['summary']
                 summary_obj.save()
                 return Response(serlizer_data.data, status=status.HTTP_201_CREATED)
             else:
@@ -305,7 +305,7 @@ class PatientScheduleView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self,request):
-        rows = PatientSchedule.objects.filter(patient = request.user)
+        rows = PatientSchedule.objects.filter(user = request.user) #chaning patinet=user
         serlizer_data = PatientScheduleSerializer(rows, many=True)
         return Response(serlizer_data.data)
     
@@ -314,12 +314,12 @@ class PatientScheduleView(APIView):
             user_obj = request.user
             print(request.data)
             
-            updated_data ={'patient_id': user_obj.id,'doctors_schedule_id': request.data.get('doctors_schedule_id', '')}
+            updated_data ={'user_id': user_obj.id,'doctors_schedule_id': request.data.get('doctors_schedule_id', '')}
 
             serializer_data= PatientScheduleSerializer(data = updated_data) 
 
             if serializer_data.is_valid():
-                summary_obj, created = PatientSchedule.objects.update_or_create(patient_id = user_obj.id, doctors_schedule_id = request.data.get('doctors_schedule_id', ''))
+                summary_obj, created = PatientSchedule.objects.update_or_create(user_id = user_obj.id, doctors_schedule_id = request.data.get('doctors_schedule_id', ''))
                 return Response({"success":True}, status=status.HTTP_201_CREATED)
             else:
 
@@ -337,7 +337,7 @@ class FamilyMemberView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        members = FamilyMember.objects.filter(patient = request.user)
+        members = FamilyMember.objects.filter(user = request.user)
         serlizer_data = FamilyMemberSerializer(members, many=True)
         return Response(serlizer_data.data)
 
@@ -347,7 +347,7 @@ class FamilyMemberView(APIView):
             user_obj = request.user
             print(request.data)
             
-            updated_data ={'patient_id':user_obj.id,
+            updated_data ={'user_id':user_obj.id,
                             'first_name': request.data.get('first_name', ''),
                             'last_name': request.data.get('last_name', ''),
                             'gender': request.data.get('gender', ''),
@@ -366,7 +366,7 @@ class FamilyMemberView(APIView):
                             'profile_picture': request.data.get('profile_picture', '')
 
                             }
-                fm_obj, created = FamilyMember.objects.update_or_create(patient_id = user_obj.id, 
+                fm_obj, created = FamilyMember.objects.update_or_create(user_id = user_obj.id, 
                     first_name = request.data.get('first_name', ''),
                     last_name= request.data.get('last_name', ''), defaults= data)
 
@@ -426,7 +426,7 @@ class MedicalRecordView(APIView):
 
 
     def get(self,request):
-        records = MedicalRecord.objects.filter(patient = request.user)
+        records = MedicalRecord.objects.filter(user = request.user)
         serlizer_data = MedicalRecordSerializer(records, many=True)
         return Response(serlizer_data.data)
 
@@ -437,7 +437,7 @@ class MedicalRecordView(APIView):
             user_obj = request.user
             print(request.data)
             
-            updated_data ={'patient_id':user_obj.id,
+            updated_data ={'user_id':user_obj.id,
                             'family_member_id': request.data.get('family_member_id', ''),
                             'record_name': request.data.get('record_name', ''),
                             'file_name': request.data.get('file_name', ''),
@@ -453,7 +453,7 @@ class MedicalRecordView(APIView):
                             }
 
                 print(data)
-                fm_obj, created = MedicalRecord.objects.update_or_create(patient_id = user_obj.id,
+                fm_obj, created = MedicalRecord.objects.update_or_create(user_id = user_obj.id,
 
                     family_member_id = request.data.get('family_member_id', ''),
                     file_name= request.data.get('file_name', ''), defaults= data)
@@ -522,7 +522,7 @@ class ReviewsView(APIView):
         try:
             print(request.data)
             
-            updated_data ={'patient_id': request.data.get("patient_id", ''),
+            updated_data ={'user_id': request.data.get("user_id", ''),
                             'doctor_id': request.data.get('doctor_id', ''),
                             'comment': request.data.get('comment', ''),
                             'rating': request.data.get('rating', ''),
@@ -542,7 +542,15 @@ class ReviewsView(APIView):
             print(e)
             return Response ({'status':404 , 'error':"ReviewsView server error"})  
         
+class NotificationView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        notifi_objs = Notification.objects.filter(user_id= request.user.id)
+        serlizer_data = NotificationSerializer(notifi_objs, many=True)
+        return Response(serlizer_data.data)
 
 
-
-    
+#  class
+#    post
