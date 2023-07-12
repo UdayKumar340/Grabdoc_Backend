@@ -80,7 +80,7 @@ WSGI_APPLICATION = 'GrabdocProject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'Grabdoc-db',
+        'NAME': 'GRABDOC-DB', #last db is Grabdoc-db
         'USER': 'postgres',
         'PASSWORD': 'admin123',
         'HOST': '',
@@ -136,7 +136,7 @@ MEDIA_URL = '/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'patient_app.PatientMasterTable'
+AUTH_USER_MODEL = 'patient_app.GrabdocUser'
 
 REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'patient_app.views.custom_exception_handler'
