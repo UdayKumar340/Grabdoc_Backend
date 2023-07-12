@@ -21,10 +21,11 @@ class Mobile_Reg(models.Model):
     number_of_attements = models.IntegerField(default=0)
 
 
-class PatientMasterTable(AbstractUser):
+#grabdoc usertable
+class GrabdocUser(AbstractUser): #PatientMasteTable
     phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
-    patient_first_name = models.CharField(max_length= 200, null=True, blank = True)
-    patient_last_name = models.CharField(max_length= 200, null=True, blank = True)
+    first_name = models.CharField(max_length= 200, null=True, blank = True) #change first name and last
+    last_name = models.CharField(max_length= 200, null=True, blank = True)
     gendar = models.CharField(max_length= 200, null=True, blank = True)
     email = models.CharField(max_length= 200, null=True, blank = True)
     date_of_birth = models.DateField(null = True, blank = True)
@@ -32,15 +33,17 @@ class PatientMasterTable(AbstractUser):
     height = models.IntegerField(null = True, blank = True)
     weight = models.IntegerField(null = True, blank = True)
     blood_group = models.CharField(max_length=10,null = True, blank = True)
+    profile_picture = models.CharField(max_length= 50,null=True, blank=True)
     def __str__(self):
-        return f'{self.patient_first_name} {self.patient_last_name}'
-
+        return f'{self.first_name} {self.last_name}'
+#need to add field user type
     
 
     USERNAME_FIELD = 'username'
 #    objects = PatientmasterManager()
 #   def __str__(self):
 #        return (self.patient_first_name,self.patient_last_name)
+
 
 
 
@@ -66,7 +69,7 @@ class SpecalityMastertable(models.Model):
 
 class Doctors(models.Model):
     name = models.CharField(max_length= 200, null=True, blank = True)
-    profile_picture = profile_picture = models.CharField(max_length= 50,null=True, blank=True)
+    profile_picture = models.CharField(max_length= 50,null=True, blank=True)
     specality =  models.ForeignKey(SpecalityMastertable, on_delete=models.CASCADE)
     experience = models.IntegerField(null = True, blank = True)
     designation = models.CharField(max_length= 200, null=True, blank = True)
@@ -90,23 +93,23 @@ class DoctorsSchedule(models.Model):
 
 class PatientSummary(models.Model):
     summary = models.TextField(null=True, blank = True)
-    patient = models.OneToOneField(PatientMasterTable, on_delete=models.CASCADE,primary_key=True)
+    user = models.OneToOneField(GrabdocUser, on_delete=models.CASCADE,primary_key=True)
 
 
 
 class PatientSchedule(models.Model):
     doctors_schedule = models.ForeignKey(DoctorsSchedule, on_delete=models.CASCADE)
-    patient = models.ForeignKey(PatientMasterTable, on_delete=models.CASCADE)
+    user = models.ForeignKey(GrabdocUser, on_delete=models.CASCADE)
     def __str__(self):
-        return f'{self.doctors_schedule} {self.patient}'
+        return f'{self.doctors_schedule} {self.user}'
         
 
     class Meta:
-        unique_together = ('doctors_schedule', 'patient',)
+        unique_together = ('doctors_schedule', 'user',)
 
 
 class FamilyMember(models.Model):
-    patient = models.ForeignKey(PatientMasterTable, on_delete=models.CASCADE)
+    user = models.ForeignKey(GrabdocUser, on_delete=models.CASCADE)
     profile_picture = models.CharField(max_length= 50,null=True, blank=True)
     first_name = models.CharField(max_length= 50)
     last_name = models.CharField(max_length= 50)
@@ -128,12 +131,12 @@ class FamilyMember(models.Model):
         return self.relationship
 
     class Meta:
-        unique_together = ('patient','first_name',"last_name")
+        unique_together = ('user','first_name',"last_name")
 
 
 
 class MedicalRecord(models.Model):
-    patient = models.ForeignKey(PatientMasterTable, on_delete=models.CASCADE)
+    user = models.ForeignKey(GrabdocUser, on_delete=models.CASCADE)
     family_member = models.ForeignKey(FamilyMember, on_delete=models.CASCADE)
 
     record_name = models.CharField(max_length= 50)
@@ -150,7 +153,7 @@ class MedicalRecord(models.Model):
 
 
     class Meta:
-        unique_together = ('patient','family_member',"file_name")
+        unique_together = ('user','family_member',"file_name")
 
 class PatientScheduleMedicalRecord(models.Model):
 
@@ -168,8 +171,47 @@ class PatientScheduleMedicalRecord(models.Model):
 
 class Reviews(models.Model):
     doctor = models.ForeignKey(Doctors, on_delete=models.CASCADE,related_name='reviews_doctor')
-    patient = models.ForeignKey(PatientMasterTable, on_delete=models.CASCADE)
+    user = models.ForeignKey(GrabdocUser, on_delete=models.CASCADE)
     comment = models.TextField(null=True, blank = True)
     rating = models.IntegerField(default=0)
     review_date = models.DateField(auto_now_add=True, blank = True)
 
+class Notification(models.Model):
+    user = models.ForeignKey(GrabdocUser, on_delete=models.CASCADE)
+    reference_user =  models.ForeignKey(GrabdocUser, on_delete=models.SET_DEFAULT,related_name='reference_user',default=None,null=True)
+    notification_text = models.TextField(null=True, blank = True)
+    notification_date  = models.DateTimeField(auto_now_add=True, blank=True)
+
+#user d
+# user, device_id push_token ctime utime time_zone login_status bollen field
+
+class UserDevice(models.Model):
+    user = models.ForeignKey(GrabdocUser, on_delete=models.CASCADE,default=None,null=True)
+    device_id= models.CharField(max_length=100)
+    ctime = models.DateTimeField(auto_now_add=True, blank=True)
+    utime = models.DateTimeField(auto_now_add=True, blank=True)
+#    time_zone 
+    login_status = models.BooleanField(default = False)
+
+class Payments(models.Model):
+    user = models.ForeignKey(GrabdocUser, on_delete=models.CASCADE)
+    patient_schedule = models.ForeignKey(PatientSchedule,on_delete=models.SET_DEFAULT,default=None,null=True)
+    payment_choices = (
+        ('Pay on Visit','pay on Visit'),
+        ('Amazon Pay','Amazon Pay'),
+        ('Card','Card'),
+        ('PayPal','PayPal'),
+        ('Skrill','Skrill')
+    )
+    payment_type = models.CharField(max_length= 12, choices=payment_choices)
+    amount = models.FloatField(default=0)
+    status_choices =(
+        ('Success','Success'),
+        ('Failed','Failed'),
+        ('Processing','Processing'),
+        ('Cancelled','Cancelled')
+
+    )
+    status = models.CharField(max_length=20,choices=status_choices)
+    ctime = models.DateTimeField(auto_now_add=True, blank=True)
+    utime = models.DateTimeField(auto_now_add=True, blank=True)
