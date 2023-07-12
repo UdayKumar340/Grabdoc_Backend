@@ -21,7 +21,7 @@ urlpatterns = [
     path('doctor_time_slots/<int:doctor_id>',Doctors_slot_View.as_view()),
 
 
-    path('patient-summary/<int:patient_id>',PatientSummaryView.as_view()),
+    path('patient-summary/<int:user_id>',PatientSummaryView.as_view()),
 
     path('patient-schedule/', PatientScheduleView.as_view()),
 
@@ -35,6 +35,9 @@ urlpatterns = [
 
     path('reviews/', ReviewsView.as_view()),
     path('reviews/<int:doctor_id>', ReviewsView.as_view()),
+
+    path('notifications/',NotificationView.as_view()),
+
 
 
        
