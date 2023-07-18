@@ -195,7 +195,7 @@ class PatientDetailsUpdate(APIView):
             if serializer_data.is_valid():
                 print(serializer_data)
                 serializer_data.save()
-                return Response(serializer_data.data)
+                return Response({"success":True})
             else:
                 response_data ={"success":False,'errors':serializer_data.errors,"error_meassege":"validation failed"}    
                 print(serializer_data.errors)
@@ -305,7 +305,8 @@ class PatientScheduleView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self,request):
-        rows = PatientSchedule.objects.filter(user = request.user) #chaning patinet=user
+        status = request.GET.get('status','Upcoming')
+        rows = PatientSchedule.objects.filter(user = request.user,status=status) #chaning patinet=user
         serlizer_data = PatientScheduleSerializer(rows, many=True)
         return Response(serlizer_data.data)
     
@@ -551,6 +552,38 @@ class NotificationView(APIView):
         serlizer_data = NotificationSerializer(notifi_objs, many=True)
         return Response(serlizer_data.data)
 
+class PaymentView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
-#  class
-#    post
+    def get(self,request,payment_id):
+        payment_obj = Payments.objects.get(pk=payment_id)
+        serializer_data = PaymentsSerializer(payment_obj,many=False)
+        return Response(serializer_data.data)
+
+
+
+    def post(self,request,payment_id=None):
+        try:
+            print(request.data)
+            
+            updated_data ={'user_id': request.user.id,
+                            'patient_schedule_id': request.data.get('patient_schedule_id', ''),
+                            'payment_type': request.data.get('payment_type', ''),
+                            'amount': request.data.get('amount', ''),
+                        }
+
+            serializer_data= PaymentsSerializer(data = updated_data) 
+
+            if serializer_data.is_valid():
+                payment_obj = Payments.objects.create(**updated_data)
+                return Response({"success":True,'payment_id':payment_obj.id}, status=status.HTTP_201_CREATED)
+            else:
+
+                response_data ={"success":False,'errors':serializer_data.errors,"error_meassege":"validation failed"}    
+                print(serializer_data.errors)
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        except  Exception as e:
+            print(e)
+            return Response ({'status':404 , 'error':"paymentView server error"}) 
+        
