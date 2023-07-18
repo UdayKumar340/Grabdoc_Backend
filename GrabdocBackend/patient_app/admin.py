@@ -31,3 +31,5 @@ admin.site.register(PatientScheduleMedicalRecord)
 admin.site.register(Reviews)
 
 admin.site.register(Notification)
+
+admin.site.register(Payments)
