@@ -100,6 +100,12 @@ class PatientSummary(models.Model):
 class PatientSchedule(models.Model):
     doctors_schedule = models.ForeignKey(DoctorsSchedule, on_delete=models.CASCADE)
     user = models.ForeignKey(GrabdocUser, on_delete=models.CASCADE)
+    status_choices =(
+        ('Upcoming','Upcoming'),
+        ('Completed','Completed'),
+        ('Cancelled','Cancelled')
+    )
+    status = models.CharField(max_length=20,choices=status_choices,default= 'Upcoming')
     def __str__(self):
         return f'{self.doctors_schedule} {self.user}'
         
@@ -191,6 +197,8 @@ class UserDevice(models.Model):
     ctime = models.DateTimeField(auto_now_add=True, blank=True)
     utime = models.DateTimeField(auto_now_add=True, blank=True)
 #    time_zone 
+
+
     login_status = models.BooleanField(default = False)
 
 class Payments(models.Model):
