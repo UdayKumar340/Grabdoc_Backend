@@ -93,7 +93,7 @@ class PatientScheduleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PatientSchedule
-        fields = ["doctors_schedule_id","doctors_name","user_id",'patient_first_name',"patient_last_name"]
+        fields = ["doctors_schedule_id","doctors_name","user_id",'patient_first_name',"patient_last_name",'status']
 
 
 class FamilyMemberSerializer(serializers.ModelSerializer):
@@ -142,3 +142,8 @@ class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = ['user_id','notification_text','notification_date','reference_user_id','profile_picture']
+
+class PaymentsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payments
+        fields = ['user_id','patient_schedule_id','payment_type','amount','status','ctime','utime']
