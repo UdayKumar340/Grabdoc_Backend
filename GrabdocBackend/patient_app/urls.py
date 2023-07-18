@@ -38,6 +38,7 @@ urlpatterns = [
 
     path('notifications/',NotificationView.as_view()),
 
+    path('payments/<int:payment_id>', PaymentView.as_view()),
 
 
        
