@@ -74,6 +74,7 @@ class Doctors(models.Model):
     experience = models.IntegerField(null = True, blank = True)
     designation = models.CharField(max_length= 200, null=True, blank = True)
     online = models.BooleanField()
+    video_consultation = models.BooleanField(default=True)
     language = models.CharField(max_length= 200, null=True, blank = True)
     location = models.CharField(max_length= 200, null=True, blank = True)
     fee = models.CharField(max_length= 20, null=True, blank = True)
