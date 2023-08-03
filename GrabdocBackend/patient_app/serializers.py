@@ -89,11 +89,15 @@ class PatientScheduleSerializer(serializers.ModelSerializer):
     patient_first_name = serializers.CharField(source='user.first_name',read_only=True)
     patient_last_name = serializers.CharField(source='user.last_name',read_only=True)
 
+    doctor_experience = serializers.CharField(source='doctors_schedule.doctor.experience',read_only=True)
+    doctor_designation = serializers.CharField(source='doctors_schedule.doctor.designation',read_only=True)
+    doctor_specality = serializers.CharField(source='doctors_schedule.doctor.specality',read_only=True)
+
 
 
     class Meta:
         model = PatientSchedule
-        fields = ["doctors_schedule_id","doctors_name","user_id",'patient_first_name',"patient_last_name",'status']
+        fields = ["doctors_schedule_id","doctors_name","user_id",'patient_first_name',"patient_last_name",'status','doctor_experience','doctor_designation','doctor_specality']
 
 
 class FamilyMemberSerializer(serializers.ModelSerializer):
@@ -105,12 +109,12 @@ class FamilyMemberSerializer(serializers.ModelSerializer):
 
 class MedicalRecordSerializer(serializers.ModelSerializer):
     
-    family_menber_name = serializers.CharField(source='family_member.relationship',read_only=True)
+    family_member_name = serializers.CharField(source='family_member.relationship',read_only=True)
 
 
     class Meta:
         model = MedicalRecord
-        fields = ["user_id",'family_member_id','family_menber_name','record_name','file_name','record_date']
+        fields = ["user_id",'family_member_id','family_member_name','record_name','file_name','record_date']
 
 
 
