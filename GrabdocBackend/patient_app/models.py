@@ -215,12 +215,14 @@ class Payments(models.Model):
     payment_type = models.CharField(max_length= 12, choices=payment_choices)
     amount = models.FloatField(default=0)
     status_choices =(
+        ('Init','Init'),
         ('Success','Success'),
         ('Failed','Failed'),
         ('Processing','Processing'),
         ('Cancelled','Cancelled')
 
+
     )
-    status = models.CharField(max_length=20,choices=status_choices)
+    status = models.CharField(max_length=20,choices=status_choices,default="Init")
     ctime = models.DateTimeField(auto_now_add=True, blank=True)
     utime = models.DateTimeField(auto_now_add=True, blank=True)
