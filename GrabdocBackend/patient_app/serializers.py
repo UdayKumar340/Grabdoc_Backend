@@ -74,7 +74,7 @@ class DoctorsScheduleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DoctorsSchedule
-        fields = ['doctor_id','doctor_name','time_slot']
+        fields = ['doctor_id','doctor_name','time_slot','id']
 
 
 class PatientSummarySerializer(serializers.ModelSerializer):
