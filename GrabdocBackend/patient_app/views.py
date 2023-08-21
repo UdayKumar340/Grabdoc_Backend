@@ -251,8 +251,8 @@ class Doctors_slot_View(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, **kwargs):
-        rows =  DoctorsSchedule.objects.all()
+    def get(self, request,doctor_id):
+        rows = DoctorsSchedule.objects.filter(doctor_id=doctor_id)  #DoctorsSchedule.objects.all()
         serlizer_data = DoctorsScheduleSerializer(rows, many=True)
         return Response(serlizer_data.data) 
 
@@ -263,7 +263,7 @@ class PatientSummaryView(APIView):
 
 
 
-    def get(self,request,user_id):#doubt
+    def get(self,request,user_id):
         row =  PatientSummary.objects.filter(user_id = user_id).first()
         
         if row is not None:
