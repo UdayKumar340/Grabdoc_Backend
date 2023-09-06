@@ -26,7 +26,7 @@ class GrabdocUser(AbstractUser): #PatientMasteTable
     phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
     first_name = models.CharField(max_length= 200, null=True, blank = True) #change first name and last
     last_name = models.CharField(max_length= 200, null=True, blank = True)
-    gendar = models.CharField(max_length= 200, null=True, blank = True)
+    gender = models.CharField(max_length= 200, null=True, blank = True)
     email = models.CharField(max_length= 200, null=True, blank = True)
     date_of_birth = models.DateField(null = True, blank = True)
     username = models.CharField(('Phone Number'), validators=[phone_regex], max_length=17, unique=True)
@@ -144,7 +144,7 @@ class FamilyMember(models.Model):
 
 class MedicalRecord(models.Model):
     user = models.ForeignKey(GrabdocUser, on_delete=models.CASCADE)
-    family_member = models.ForeignKey(FamilyMember, on_delete=models.CASCADE)
+    family_member = models.ForeignKey(FamilyMember, on_delete=models.SET_DEFAULT, null=True,default=None)
 
     record_name = models.CharField(max_length= 50)
 
