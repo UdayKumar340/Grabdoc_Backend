@@ -18,6 +18,8 @@ import os
 import uuid
 from rest_framework.views import exception_handler
 
+from datetime import datetime
+
 #authentication_classes = [TokenAuthentication]
 #permission_classes = [IsAuthenticated]
 
@@ -33,10 +35,6 @@ def custom_exception_handler(exc, context):
         response.data['status_code'] = response.status_code
 
     return response
-
-
-#fields chages
-
 
 
 
@@ -252,7 +250,8 @@ class Doctors_slot_View(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request,doctor_id):
-        rows = DoctorsSchedule.objects.filter(doctor_id=doctor_id)  #DoctorsSchedule.objects.all()
+        today = datetime.today()
+        rows = DoctorsSchedule.objects.filter(doctor_id=doctor_id,time_slot__gt=today)  #DoctorsSchedule.objects.all()
         serlizer_data = DoctorsScheduleSerializer(rows, many=True)
         return Response(serlizer_data.data) 
 
@@ -439,7 +438,7 @@ class MedicalRecordView(APIView):
             print(request.data)
             
             updated_data ={'user_id':user_obj.id,
-                            'family_member_id': request.data.get('family_member_id', ''),
+                            'family_member_id': request.data.get('family_member_id', None),
                             'record_name': request.data.get('record_name', ''),
                             'file_name': request.data.get('file_name', ''),
                             'record_date': request.data.get('record_date', ''),
@@ -456,7 +455,7 @@ class MedicalRecordView(APIView):
                 print(data)
                 fm_obj, created = MedicalRecord.objects.update_or_create(user_id = user_obj.id,
 
-                    family_member_id = request.data.get('family_member_id', ''),
+                    family_member_id = request.data.get('family_member_id', None),
                     file_name= request.data.get('file_name', ''), defaults= data)
 
 
