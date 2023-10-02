@@ -149,6 +149,15 @@ class NotificationSerializer(serializers.ModelSerializer):
         model = Notification
         fields = ['user_id','notification_text','notification_date','reference_user_id','profile_picture']
 
+class UserDeviceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserDevice
+        fields = ['user_id','device_id','push_token']
+
+
+
+
+
 class PaymentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payments

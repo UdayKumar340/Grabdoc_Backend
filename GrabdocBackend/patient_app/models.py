@@ -195,6 +195,7 @@ class Notification(models.Model):
 class UserDevice(models.Model):
     user = models.ForeignKey(GrabdocUser, on_delete=models.CASCADE,default=None,null=True)
     device_id= models.CharField(max_length=100)
+    push_token = models.CharField(max_length=100)
     ctime = models.DateTimeField(auto_now_add=True, blank=True)
     utime = models.DateTimeField(auto_now_add=True, blank=True)
 #    time_zone 

@@ -38,6 +38,9 @@ urlpatterns = [
 
     path('notifications/',NotificationView.as_view()),
 
+
+    path('userdevice/',UserDeviceView.as_view()),
+
     path('payments/',PaymentView.as_view()),
 
     path('payments/<int:payment_id>', PaymentView.as_view()),

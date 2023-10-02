@@ -551,6 +551,53 @@ class NotificationView(APIView):
         serlizer_data = NotificationSerializer(notifi_objs, many=True)
         return Response(serlizer_data.data)
 
+
+
+class UserDeviceView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]   
+    
+    def get(self, request):
+        user_obj = UserDevice.objects.filter(user_id= request.user.id)
+        serlizer_data = UserDeviceSerializer(user_obj, many=False)
+        return Response(serlizer_data.data)
+
+    
+    def post(self, request):
+        try:
+
+            updated_data = {'user_id':request.user.id, 
+            'device_id':request.data.get("device_id", ''), 
+            "push_token":request.data.get("push_token", '')
+            }
+
+
+
+
+            serlizer_data = UserDeviceSerializer(data=updated_data)
+
+            if serlizer_data.is_valid():
+                ud_obj, created = UserDevice.objects.update_or_create(**updated_data)
+                return Response({"success":True,'user_device_id':ud_obj.id}, status=status.HTTP_201_CREATED)
+                
+            else:
+
+                response_data ={"success":False,'errors':serializer_data.errors,"error_meassege":"validation failed"}    
+                print(serializer_data.errors)
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        
+        except  Exception as e:
+            print(e)
+            return Response ({'status':404 , 'error':"user device view server error"})
+
+
+
+
+
+
+
+
+
 class PaymentView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
