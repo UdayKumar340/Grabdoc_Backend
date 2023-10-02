@@ -569,6 +569,7 @@ class UserDeviceView(APIView):
             updated_data = {'user_id':request.user.id, 
             'device_id':request.data.get("device_id", ''), 
             "push_token":request.data.get("push_token", '')}
+            print(updated_data)
 
             serializer_data = UserDeviceSerializer(data=updated_data)
 
