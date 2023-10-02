@@ -32,4 +32,6 @@ admin.site.register(Reviews)
 
 admin.site.register(Notification)
 
+admin.site.register(UserDevice)
+
 admin.site.register(Payments)
