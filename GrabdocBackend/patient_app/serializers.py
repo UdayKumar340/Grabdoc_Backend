@@ -27,7 +27,7 @@ class GrabdocUserSerializer(serializers.ModelSerializer): #PatientMasterTableSer
     class Meta:
         model = GrabdocUser
         read_only_fields = ["phonenumber",'id',]
-        fields = ['id',"first_name","last_name","gendar","email",'date_of_birth','height','weight','blood_group',"phonenumber"] 
+        fields = ['id',"first_name","last_name","gender","email",'date_of_birth','height','weight','blood_group',"phonenumber"] 
     
     def create(self, validated_data):
         return super().create(validated_data)

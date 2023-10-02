@@ -199,8 +199,6 @@ class UserDevice(models.Model):
     ctime = models.DateTimeField(auto_now_add=True, blank=True)
     utime = models.DateTimeField(auto_now_add=True, blank=True)
 #    time_zone 
-
-
     login_status = models.BooleanField(default = False)
 
 class Payments(models.Model):

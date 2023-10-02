@@ -176,7 +176,7 @@ class PatientDetailsUpdate(APIView):
             
             updated_data ={'first_name': request.data.get('first_name', ''),
                             'last_name': request.data.get('last_name', ''),
-                            'gendar': request.data.get('gendar', ''),
+                            'gender': request.data.get('gender', ''),
                             'email': request.data.get('email', ''),
                             'date_of_birth': request.data.get('date_of_birth', '')
                         
