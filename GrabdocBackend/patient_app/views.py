@@ -568,15 +568,11 @@ class UserDeviceView(APIView):
 
             updated_data = {'user_id':request.user.id, 
             'device_id':request.data.get("device_id", ''), 
-            "push_token":request.data.get("push_token", '')
-            }
+            "push_token":request.data.get("push_token", '')}
 
+            serializer_data = UserDeviceSerializer(data=updated_data)
 
-
-
-            serlizer_data = UserDeviceSerializer(data=updated_data)
-
-            if serlizer_data.is_valid():
+            if serializer_data.is_valid():
                 ud_obj, created = UserDevice.objects.update_or_create(**updated_data)
                 return Response({"success":True,'user_device_id':ud_obj.id}, status=status.HTTP_201_CREATED)
                 
