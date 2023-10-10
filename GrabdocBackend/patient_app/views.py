@@ -253,7 +253,17 @@ class Doctors_slot_View(APIView):
         today = datetime.today()
         rows = DoctorsSchedule.objects.filter(doctor_id=doctor_id,time_slot__gt=today)  #DoctorsSchedule.objects.all()
         serlizer_data = DoctorsScheduleSerializer(rows, many=True)
-        return Response(serlizer_data.data) 
+        return Response(serlizer_data.data)
+    def post(self, request,doctor_id):
+        print(request.data)
+        ds = DoctorsSchedule(doctor_id=doctor_id,time_slot=request.data.get("time_slot", ''))
+        ds.save()
+
+        return Response({"success":True})
+
+
+
+
 
 
 class PatientSummaryView(APIView):
