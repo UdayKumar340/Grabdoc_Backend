@@ -20,6 +20,9 @@ from rest_framework.views import exception_handler
 
 from datetime import datetime
 
+
+from twilio.rest import Client
+import random
 #authentication_classes = [TokenAuthentication]
 #permission_classes = [IsAuthenticated]
 
@@ -42,8 +45,18 @@ def custom_exception_handler(exc, context):
 
 class MobileRegView(APIView):
     def post(self, request):
-        data=request.data
-        data['otp']=123456
+        data=request.data 
+
+        otp = ''.join([str(random.randint(0, 9)) for i in range(4)])
+        data['otp']= otp
+        account_sid = 'ACbc3a87df7fa8723c4da426b1d7f475a6'
+        auth_token = '98c3ceaebf977236cbca1a7e11ad01a8'
+        client = Client(account_sid, auth_token)
+        message = client.messages.create(
+            body=f"Your OTP is: {otp}",
+            from_='+12624760662', # Your Twilio number
+            to=f"+91{data['phone_number']}"
+        )
         print(data)
         serializer_data= MobileRegSerializer(data=data) 
 
@@ -142,7 +155,7 @@ class PatientLoginView(APIView):
 
             if serlizer_data.is_valid():
                 serlizer_data.save()
-                return Response(serlizer_data.data, status=status.HTTP_201_CREATED)
+                return Response(serlizer_data.data, status=status.HTTP_201_CREATED)  # welcom ms new user
             else:
 
                 response_data ={"success":False,'errors':serializer_data.errors,"error_meassege":"validation failed"}    
@@ -330,7 +343,7 @@ class PatientScheduleView(APIView):
 
             if serializer_data.is_valid():
                 summary_obj, created = PatientSchedule.objects.update_or_create(user_id = user_obj.id, doctors_schedule_id = request.data.get('doctors_schedule_id', ''))
-                return Response({"success":True}, status=status.HTTP_201_CREATED)
+                return Response({"success":True}, status=status.HTTP_201_CREATED) # booking doctor time slot send notification time and doctor name
             else:
 
                 response_data ={"success":False,'errors':serializer_data.errors,"error_meassege":"validation failed"}    
@@ -469,7 +482,7 @@ class MedicalRecordView(APIView):
                     file_name= request.data.get('file_name', ''), defaults= data)
 
 
-                return Response({"success":True}, status=status.HTTP_201_CREATED)
+                return Response({"success":True}, status=status.HTTP_201_CREATED) # how many medical record added
             else:
                 response_data ={"success":False,'errors':serializer_data.errors,"error_meassege":"validation failed"}    
                 print(serializer_data.errors)
@@ -541,7 +554,7 @@ class ReviewsView(APIView):
             serializer_data= ReviewsSerializer(data = updated_data) 
 
             if serializer_data.is_valid():
-                review_obj = Reviews.objects.create(**updated_data)
+                review_obj = Reviews.objects.create(**updated_data) #review thanks msg
                 return Response({"success":True,'review_id':review_obj.id}, status=status.HTTP_201_CREATED)
             else:
 
@@ -630,7 +643,7 @@ class PaymentView(APIView):
 
             if serializer_data.is_valid():
                 payment_obj = Payments.objects.create(**updated_data)
-                return Response({"success":True,'payment_id':payment_obj.id}, status=status.HTTP_201_CREATED)
+                return Response({"success":True,'payment_id':payment_obj.id}, status=status.HTTP_201_CREATED)  #payment sucess msg
             else:
 
                 response_data ={"success":False,'errors':serializer_data.errors,"error_meassege":"validation failed"}    
