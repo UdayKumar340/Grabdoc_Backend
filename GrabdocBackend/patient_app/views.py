@@ -44,8 +44,7 @@ def custom_exception_handler(exc, context):
 
 
 class MobileRegView(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]    
+   
     def post(self, request):
         data=request.data 
 
@@ -78,8 +77,8 @@ class MobileRegView(APIView):
 
 
 class verifiyOtp(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]    
+
+
     def post (self, request):
         try:
 
@@ -145,8 +144,7 @@ class verifiyOtp(APIView):
 
 
 class PatientLoginView(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]    
+  
     
     def get(self, request):
         user_obj = GrabdocUser.objects.all()
