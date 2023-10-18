@@ -44,6 +44,8 @@ def custom_exception_handler(exc, context):
 
 
 class MobileRegView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]    
     def post(self, request):
         data=request.data 
 
@@ -76,6 +78,8 @@ class MobileRegView(APIView):
 
 
 class verifiyOtp(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]    
     def post (self, request):
         try:
 
@@ -141,6 +145,8 @@ class verifiyOtp(APIView):
 
 
 class PatientLoginView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]    
     
     def get(self, request):
         user_obj = GrabdocUser.objects.all()
@@ -351,7 +357,27 @@ class PatientScheduleView(APIView):
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         except  Exception as e:
             print(e)
-            return Response ({'status':404 , 'error':"PatientScheduleView server error"})    
+            return Response ({'status':404 , 'error':"PatientScheduleView server error"})
+
+class PatientRescheduleView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    def post(self,request):
+        try:
+            patient_schedule_id = request.data.get('patient_schedule_id', '')
+            doctors_schedule_id = request.data.get('doctors_schedule_id', '')
+            ps = PatientSchedule.objects.get(pk=patient_schedule_id)
+            ps.doctors_schedule_id = doctors_schedule_id
+            ps.save()
+            return Response({"success":True}, status=status.HTTP_201_CREATED)
+        except  Exception as e:
+            print(e)
+            return Response ({'status':404 , 'error':"PatientReschedule server error"})
+        
+
+
+
+             
 
 
 

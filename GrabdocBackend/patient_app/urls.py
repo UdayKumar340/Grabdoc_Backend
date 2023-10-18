@@ -25,6 +25,8 @@ urlpatterns = [
 
     path('patient-schedule/', PatientScheduleView.as_view()),
 
+    path('patient-reschedule/', PatientRescheduleView.as_view()),
+
     path('family-members/', FamilyMemberView.as_view()),
 
     path('file-upload/', FileUploadView.as_view()),
@@ -44,10 +46,6 @@ urlpatterns = [
     path('payments/',PaymentView.as_view()),
 
     path('payments/<int:payment_id>', PaymentView.as_view()),
-
-
-
-       
 
 ]
 
