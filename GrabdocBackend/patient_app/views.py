@@ -19,7 +19,7 @@ import uuid
 from rest_framework.views import exception_handler
 
 from datetime import datetime
-
+import traceback
 
 from twilio.rest import Client
 import random
@@ -41,25 +41,30 @@ def custom_exception_handler(exc, context):
 
 
 
-
-
 class MobileRegView(APIView):
    
     def post(self, request):
         data=request.data 
 
-        otp = ''.join([str(random.randint(0, 9)) for i in range(4)])
-        data['otp']= otp
         phonenumber = f"+91{data['phone_number']}"
-        print(phonenumber)
-        account_sid = 'ACbc3a87df7fa8723c4da426b1d7f475a6'
-        auth_token = '98c3ceaebf977236cbca1a7e11ad01a8'
-        client = Client(account_sid, auth_token)
-        message = client.messages.create(
-            body=f"Your OTP is: {otp}",
-            from_='+12624760662', # Your Twilio number
-            to=phonenumber
-        )
+        print("phonenumber:", phonenumber)
+        otp = 123456
+
+        if phonenumber in settings.TWILIO_VERIFIED_PHONE_NUMBERS:
+            otp = ''.join([str(random.randint(0, 9)) for i in range(6)])
+            account_sid = settings.TWILIO_ACCOUNT_SID
+            auth_token = settings.TWILIO_AUTH_TOKEN
+            try:
+                client = Client(account_sid, auth_token)
+                message = client.messages.create(
+                    body=f"Your OTP is: {otp}",
+                    from_='+12624760662', # Your Twilio number
+                    to=phonenumber
+                )
+            except:
+                traceback.print_exc()
+
+        data['otp'] = otp
         print(data)
         serializer_data= MobileRegSerializer(data=data) 
 
