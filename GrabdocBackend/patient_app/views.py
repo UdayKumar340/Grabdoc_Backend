@@ -50,13 +50,14 @@ class MobileRegView(APIView):
 
         otp = ''.join([str(random.randint(0, 9)) for i in range(4)])
         data['otp']= otp
+        phonenumber = f"+91{data['phone_number']}"
         account_sid = 'ACbc3a87df7fa8723c4da426b1d7f475a6'
         auth_token = '98c3ceaebf977236cbca1a7e11ad01a8'
         client = Client(account_sid, auth_token)
         message = client.messages.create(
             body=f"Your OTP is: {otp}",
             from_='+12624760662', # Your Twilio number
-            to=f"+91{data['phone_number']}"
+            to=phonenumber
         )
         print(data)
         serializer_data= MobileRegSerializer(data=data) 
