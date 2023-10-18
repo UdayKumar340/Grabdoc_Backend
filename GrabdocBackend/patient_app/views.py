@@ -53,7 +53,7 @@ class MobileRegView(APIView):
         phonenumber = f"+91{data['phone_number']}"
         print(phonenumber)
         account_sid = 'ACbc3a87df7fa8723c4da426b1d7f475a6'
-        auth_token = '98c3ceaebf977236cbca1a7e11ad01a8'
+        auth_token = 'a651451263b0bd9e4f974193ab7ec732'
         client = Client(account_sid, auth_token)
         message = client.messages.create(
             body=f"Your OTP is: {otp}",
