@@ -47,8 +47,7 @@ class MobileRegView(APIView):
    
     def post(self, request):
         data=request.data 
-        data['otp'] = '123456'
-"""
+
         otp = ''.join([str(random.randint(0, 9)) for i in range(4)])
         data['otp']= otp
         account_sid = 'ACbc3a87df7fa8723c4da426b1d7f475a6'
@@ -59,8 +58,6 @@ class MobileRegView(APIView):
             from_='+12624760662', # Your Twilio number
             to=f"+91{data['phone_number']}"
         )
-
-"""        
         print(data)
         serializer_data= MobileRegSerializer(data=data) 
 
@@ -80,7 +77,7 @@ class MobileRegView(APIView):
 
 
 class verifiyOtp(APIView):
-
+    
 
     def post (self, request):
         try:
@@ -147,7 +144,8 @@ class verifiyOtp(APIView):
 
 
 class PatientLoginView(APIView):
-  
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]    
     
     def get(self, request):
         user_obj = GrabdocUser.objects.all()
