@@ -47,6 +47,7 @@ class MobileRegView(APIView):
         data=request.data 
 
         phonenumber = f"+91{data['phone_number']}"
+
         print("phonenumber:", phonenumber)
         otp = 123456
 
