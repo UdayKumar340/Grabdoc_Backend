@@ -23,6 +23,9 @@ import traceback
 
 from twilio.rest import Client
 import random
+
+
+from .AccessToken2 import *
 #authentication_classes = [TokenAuthentication]
 #permission_classes = [IsAuthenticated]
 
@@ -685,4 +688,29 @@ class PaymentView(APIView):
         except  Exception as e:
             print(e)
             return Response ({'status':404 , 'error':"paymentView server error"}) 
+    
+
+
+
+class AgoraView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self,request):
+            app_id = settings.AGORA_APP_ID
+            app_certificate = settings.AGORA_APP_CERTIFICATE
+            channel_name = "sample"
+
+            uid = request.user.id
+            expiration_in_seconds = 3600
+
+            rtc_service = ServiceRtc(channel_name, uid)
+            rtc_service.add_privilege(ServiceRtc.kPrivilegeJoinChannel, expiration_in_seconds)
+
+            token = AccessToken(app_id=app_id, app_certificate=app_certificate, expire=expiration_in_seconds)
+            token.add_service(rtc_service)
+            token_number = (token.build())
+            print("The token for RTC",token_number)
+            return Response ({"success":True,"token":token_number})
+
+
         

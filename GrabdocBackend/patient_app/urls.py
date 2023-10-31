@@ -47,6 +47,8 @@ urlpatterns = [
 
     path('payments/<int:payment_id>', PaymentView.as_view()),
 
+    path('agora-token/',AgoraView.as_view()),
+
 ]
 
 
