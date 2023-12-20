@@ -7,7 +7,6 @@ from rest_framework.decorators import APIView
 from rest_framework.response import Response
 from rest_framework import status
 import datetime
-from .helpers import *
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -24,8 +23,19 @@ import traceback
 from twilio.rest import Client
 import random
 
+from .RtcTokenBuilder import RtcTokenBuilder
 
-from .AccessToken2 import *
+import time
+from .FCM import FCMThread
+
+
+from django.apps import apps
+GrabdocDoctor = apps.get_model('doctors_app', 'GrabdocDoctor') # Doctors
+DoctorTimeSlots = apps.get_model('doctors_app', 'DoctorTimeSlots') #DoctorsSchedule
+DoctorSpecalities = apps.get_model('doctors_app', 'DoctorSpecalities')#DoctorSpecalities
+
+
+
 #authentication_classes = [TokenAuthentication]
 #permission_classes = [IsAuthenticated]
 
@@ -110,16 +120,27 @@ class verifiyOtp(APIView):
             if mr_obj.otp == otp:
                 mr_obj.is_phone_verified = True  # this fields add MR model
                 mr_obj.save()
-                patient = GrabdocUser.objects.filter(username = mr_obj.phone_number).first()
+                gd_user = GrabdocUser.objects.filter(username = mr_obj.phone_number).first()
 
+                if gd_user is None:
+                    gd_user = GrabdocUser(username = mr_obj.phone_number)
+                    gd_user.save()
 
-                if   patient is None:
-                    patient = GrabdocUser(username = mr_obj.phone_number)
-                    patient.save()
-                print(patient)
+                    gd_patient = GrabdocPatient(user=gd_user)
+                    gd_patient.save()
+
+                    notification_text = f"Welcome to Grabdoc!"
+
+                    notification = Notification(
+                        user = gd_user,
+                        notification_text = notification_text
+                    )
+                    notification.save()
+
+                print(gd_user)
                 
-                Token.objects.filter(user=patient).delete()
-                token = Token.objects.create(user=patient)
+                Token.objects.filter(user=gd_user).delete()
+                token = Token.objects.create(user=gd_user)
             
                 print(token)
 
@@ -128,7 +149,7 @@ class verifiyOtp(APIView):
 
         except  Exception as e:
             print(e)
-        return Response({"staus":404,"error_meassege":"someting went worng"})
+            return Response({"staus":404,"error_meassege":"someting went worng"})
 
 
     def patch(self, request):
@@ -159,15 +180,15 @@ class PatientLoginView(APIView):
     permission_classes = [IsAuthenticated]    
     
     def get(self, request):
-        user_obj = GrabdocUser.objects.all()
-        serlizer_data = GrabdocUserSerializer(user_obj, many=True)
+        user_obj = GrabdocPatient.objects.all()
+        serlizer_data = GrabdocPatientSerializer(user_obj, many=True)
         return Response(serlizer_data.data)
 
     
     def post(self, request):
         try:
             print("New Patient")
-            serlizer_data = GrabdocUserSerializer(data=request.data[0])
+            serlizer_data = GrabdocPatientSerializer(data=request.data[0])
 
             if serlizer_data.is_valid():
                 serlizer_data.save()
@@ -182,25 +203,22 @@ class PatientLoginView(APIView):
             print(e)
             return Response ({'status':404 , 'error':"patient login view server error"})
 
-        
-        
-
-
 
 class PatientDetailsUpdate(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user_obj = request.user
-        print(user_obj)
-        serlizer_data = GrabdocUserSerializer([user_obj], many=True)
+        gd_patient = request.user.grabdocpatient
+        print("Grabdoc Patient",gd_patient)
+        serlizer_data = GrabdocPatientSerializer([gd_patient], many=True)
         return Response(serlizer_data.data[0])
     
     def post(self, request):
         try:
-                
-            user_obj = request.user
+            gd_patient = request.user.grabdocpatient
+            print('gd_patient post call',gd_patient)
+
             print(request.data)
             
             updated_data ={'first_name': request.data.get('first_name', ''),
@@ -217,11 +235,19 @@ class PatientDetailsUpdate(APIView):
             if 'blood_group' in request.data:
                 updated_data['blood_group']=request.data.get('blood_group')
 
-            serializer_data= GrabdocUserSerializer(user_obj,data = updated_data) 
+            serializer_data= GrabdocPatientSerializer(gd_patient, data = updated_data) 
 
             if serializer_data.is_valid():
                 print(serializer_data)
                 serializer_data.save()
+
+                notification_text = f"You have updated your Profile"
+                notification = Notification(
+                        user = request.user,
+                        notification_text = notification_text
+                    )
+                notification.save()
+
                 return Response({"success":True})
             else:
                 response_data ={"success":False,'errors':serializer_data.errors,"error_meassege":"validation failed"}    
@@ -251,7 +277,7 @@ class SpecalityDoctorsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, **kwargs):
-        rows =  SpecalityMastertable.objects.all()
+        rows =  DoctorSpecalities.objects.all()
         serlizer_data = SpecalityMastertableSerializer(rows, many=True)
         return Response(serlizer_data.data)    
 
@@ -262,12 +288,20 @@ class DoctorsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self,request,doctor_id=None):
+        print('Request data' , request.GET)
         if doctor_id is None:
-            rows =  Doctors.objects.all()
+            # get sp_id  from request.data.get()
+            # if sp_id is not None: filter the doctors of the splist
+            specality_id  = request.GET.get('specality_id', None)
+            if specality_id is None:
+                rows = GrabdocDoctor.objects.all()
+            else:
+                rows = GrabdocDoctor.objects.filter(specality_id=specality_id)
+            
             serlizer_data = DoctorsSerializer(rows, many=True)
             return Response(serlizer_data.data)
         else:
-            row =  Doctors.objects.get(id = doctor_id)
+            row =  GrabdocDoctor.objects.get(id = doctor_id)
             serlizer_data = DoctorsSerializer(row)
             return Response(serlizer_data.data)
     
@@ -280,17 +314,18 @@ class Doctors_slot_View(APIView):
 
     def get(self, request,doctor_id):
         today = datetime.today()
-        rows = DoctorsSchedule.objects.filter(doctor_id=doctor_id,time_slot__gt=today)  #DoctorsSchedule.objects.all()
+        rows = DoctorTimeSlots.objects.filter(doctor_id=doctor_id,time_slot__gt=today)  #DoctorsSchedule.objects.all()
         serlizer_data = DoctorsScheduleSerializer(rows, many=True)
         return Response(serlizer_data.data)
+"""        
     def post(self, request,doctor_id):
         print(request.data)
-        ds = DoctorsSchedule(doctor_id=doctor_id,time_slot=request.data.get("time_slot", ''))
+        ds = DoctorTimeSlots(doctor_id=doctor_id,time_slot=request.data.get("time_slot", ''))
         ds.save()
 
         return Response({"success":True})
 
-
+"""
 
 
 
@@ -351,14 +386,64 @@ class PatientScheduleView(APIView):
     def post(self, request):
         try:
             user_obj = request.user
+            gd_patient = request.user.grabdocpatient
+            print("gd_patient:", gd_patient)
             print(request.data)
             
-            updated_data ={'user_id': user_obj.id,'doctors_schedule_id': request.data.get('doctors_schedule_id', '')}
+            updated_data ={'user_id': user_obj.id,'doctor_time_slot_id': request.data.get('doctor_time_slot_id', '')}
 
             serializer_data= PatientScheduleSerializer(data = updated_data) 
 
             if serializer_data.is_valid():
-                summary_obj, created = PatientSchedule.objects.update_or_create(user_id = user_obj.id, doctors_schedule_id = request.data.get('doctors_schedule_id', ''))
+                ps_obj, created = PatientSchedule.objects.update_or_create(user_id = user_obj.id, doctor_time_slot_id = request.data.get('doctor_time_slot_id', ''))
+
+                Doctor_Name = ps_obj.doctor_time_slot.doctor.name
+
+                Appoinment_date = ps_obj.doctor_time_slot.time_slot
+                print("Doctor_Name:",Doctor_Name)
+                print('Appointment_date:',Appoinment_date)
+                
+                Format_Appoinment= Appoinment_date.strftime("At %I:%M %p On %d %b")
+                #Todo: fromat date time is human readble text dec 15 4.30 am/pm
+
+
+                notification_text = f"Appointment scheduled for {Doctor_Name} {Format_Appoinment}."
+
+                notification = Notification(
+                    user = user_obj,
+                    reference_user_id = ps_obj.doctor_time_slot.doctor_id,
+                    notification_text = notification_text
+                )
+                notification.save()
+                print("notification_text for patient:",notification_text)
+                ud_obj = UserDevice.objects.filter(user=user_obj).first()
+                if ud_obj and ud_obj.push_token:
+                    fcm_tokens = [ud_obj.push_token]
+                    FCMThread("Appointment", notification_text, fcm_tokens).start()
+
+
+
+                # this one Doctor notification
+                gd_patient = request.user.grabdocpatient
+                Patinet_Name = f"{gd_patient.first_name} {gd_patient.last_name}"
+
+                notification_text = f"Appointment scheduled for,{Patinet_Name} {Format_Appoinment}."
+
+                notification = Notification(
+                    user_id = ps_obj.doctor_time_slot.doctor_id,
+                    reference_user = user_obj,
+                    notification_text = notification_text
+                )
+                notification.save()
+                print("notification_text for doctor:",notification_text)
+
+                ud_obj = UserDevice.objects.filter(user_id=ps_obj.doctor_time_slot.doctor_id).first()
+
+                if ud_obj and ud_obj.push_token:
+                    fcm_tokens = [ud_obj.push_token]
+                    FCMThread("Appointment", notification_text, fcm_tokens).start()
+
+                
                 return Response({"success":True}, status=status.HTTP_201_CREATED) # booking doctor time slot send notification time and doctor name
             else:
 
@@ -374,22 +459,59 @@ class PatientRescheduleView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self,request):
         try:
+
+            user_obj = request.user
+            print("user_obj:", user_obj)
             patient_schedule_id = request.data.get('patient_schedule_id', '')
             doctors_schedule_id = request.data.get('doctors_schedule_id', '')
-            ps = PatientSchedule.objects.get(pk=patient_schedule_id)
-            ps.doctors_schedule_id = doctors_schedule_id
-            ps.save()
+            ps_obj = PatientSchedule.objects.get(pk=patient_schedule_id)
+            ps_obj.doctors_schedule_id = doctors_schedule_id
+            ps_obj.save()
+
+
+
+            Doctor_Name = ps_obj.doctor_time_slot.doctor.name
+            Appoinment_date = ps_obj.doctor_time_slot.time_slot
+            Format_Appointment= Appoinment_date.strftime("At %I:%M %p On %d %b")
+
+
+            notification_text = f"Appointment rescheduled for,{Doctor_Name} on {Format_Appointment}."
+
+            notification = Notification(
+                user = user_obj,
+                reference_user_id = ps_obj.doctor_time_slot.doctor_id,
+                notification_text = notification_text
+            )
+            notification.save()
+            print(notification_text)
+            ud_obj = UserDevice.objects.filter(user=user_obj).first()
+            if ud_obj and ud_obj.push_token:
+                fcm_tokens = [ud_obj.push_token]
+                FCMThread("Appointment", notification_text, fcm_tokens).start()
+
+
+
+            gd_patient = request.user.grabdocpatient
+            print("gd_patient",gd_patient)
+            Patinet_Name = f"{gd_patient.first_name} {gd_patient.last_name}"
+            print("Patinet_Name", Patinet_Name)
+
+            notification_text = f"Appointment rescheduled for,{Patinet_Name} on {Format_Appointment}."
+            notification = Notification(
+                user_id = ps_obj.doctor_time_slot.doctor_id,
+                reference_user_id = user_obj.id,
+                notification_text = notification_text
+            )
+            notification.save()
+            print("notification_text",notification_text)            
+
+            #Todo: New notification 'Appointment rescheduled {doctor name} {date}'
+            #Todo: New notification 'Appointment rescheduled {doctor name} {date}'
+
             return Response({"success":True}, status=status.HTTP_201_CREATED)
         except  Exception as e:
             print(e)
             return Response ({'status':404 , 'error':"PatientReschedule server error"})
-        
-
-
-
-             
-
-
 
 class FamilyMemberView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -439,9 +561,6 @@ class FamilyMemberView(APIView):
         except  Exception as e:
             print(e)
             return Response ({'status':404 , 'error':"FamilyMemberView server error"})  
-
-
-
 
 
         
@@ -625,16 +744,24 @@ class UserDeviceView(APIView):
     def post(self, request):
         try:
 
-            updated_data = {'user_id':request.user.id, 
-            'device_id':request.data.get("device_id", ''), 
-            "push_token":request.data.get("push_token", '')}
+            updated_data = {
+                'user_id': request.user.id, 
+                'device_id': request.data.get("device_id", ''), 
+                "push_token": request.data.get("push_token", '')
+            }
             print(updated_data)
 
             serializer_data = UserDeviceSerializer(data=updated_data)
 
             if serializer_data.is_valid():
                 ud_obj, created = UserDevice.objects.update_or_create(**updated_data)
-                return Response({"success":True,'user_device_id':ud_obj.id}, status=status.HTTP_201_CREATED)
+                print('created:', created)
+                if created and ud_obj.push_token:
+                    notification_text = "Welcome to Grabdoc!"
+                    fcm_tokens = [ud_obj.push_token]
+                    FCMThread("Welcome", notification_text, fcm_tokens).start()
+
+                return Response({"success": True,'user_device_id': ud_obj.id }, status=status.HTTP_201_CREATED)
                 
             else:
 
@@ -645,12 +772,6 @@ class UserDeviceView(APIView):
         except  Exception as e:
             print(e)
             return Response ({'status':404 , 'error':"user device view server error"})
-
-
-
-
-
-
 
 
 
@@ -693,9 +814,32 @@ class PaymentView(APIView):
 
 
 class AgoraView(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+#    authentication_classes = [TokenAuthentication]
+#    permission_classes = [IsAuthenticated]
     def get(self,request):
+        
+        params = request.GET
+
+#        uid = request.user.id
+        uid = 1
+        channel_name = params.get("channel_name", "sample")
+        role = params.get("role", 2)
+
+        expireTimeInSeconds = 3600
+        currentTimestamp = int(time.time())
+        privilegeExpiredTs = currentTimestamp + expireTimeInSeconds
+
+        print(f"uid: {uid}, channel_name: {channel_name}, role: {role}")
+
+        token = RtcTokenBuilder.buildTokenWithUid(settings.AGORA_APP_ID, settings.AGORA_APP_CERTIFICATE, channel_name, uid, role, privilegeExpiredTs)
+        print("The token for RTC",token)
+        return Response ({"success":True,"token":token})
+
+                
+
+
+
+"""       
             app_id = settings.AGORA_APP_ID
             app_certificate = settings.AGORA_APP_CERTIFICATE
             channel_name = "sample"
@@ -711,6 +855,4 @@ class AgoraView(APIView):
             token_number = (token.build())
             print("The token for RTC",token_number)
             return Response ({"success":True,"token":token_number})
-
-
-        
+"""

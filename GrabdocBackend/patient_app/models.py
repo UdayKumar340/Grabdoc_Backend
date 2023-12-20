@@ -1,8 +1,16 @@
+
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import User 
-
+from django.conf import settings
+"""
+from django.apps import apps
+GrabdocDoctor = apps.get_model('doctors_app', 'GrabdocDoctor') # Doctors
+DoctorTimeSlots = apps.get_model('doctors_app', 'DoctorTimeSlots') #DoctorsSchedule
+DoctorSpecalities = apps.get_model('doctors_app', 'DoctorSpecalities')#DoctorSpecalities
+"""
 #class PatientmasterManager(models.Manager):
 #   def create(self, *args, **kwargs):
 #      print("manager calling..")
@@ -13,7 +21,7 @@ from django.contrib.auth.models import User
 
 
 class Mobile_Reg(models.Model):
-    phone_number = models.CharField(max_length=10, null= False, blank=False)
+    phone_number = models.CharField(max_length=15, null= False, blank=False)
     device_id = models.CharField(max_length=100)
     is_phone_verified = models.BooleanField(default = False)
     ctime = models.DateTimeField(auto_now_add=True, blank=True)
@@ -21,30 +29,39 @@ class Mobile_Reg(models.Model):
     number_of_attements = models.IntegerField(default=0)
 
 
-#grabdoc usertable
-class GrabdocUser(AbstractUser): #PatientMasteTable
+
+class GrabdocUser(AbstractUser): 
     phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
+    username = models.CharField(('Phone Number'), validators=[phone_regex], max_length=17, unique=True)
+    user_types =(
+        ('Doctor','Doctor'),
+        ('Patient','Patient'),
+        ('other','other')
+    )
+    user_type = models.CharField(max_length=20,choices=user_types,default= 'Patient')
+
+    def __str__(self):
+        return f'{self.username} ({self.user_type})'
+
+    USERNAME_FIELD = 'username'
+
+
+class GrabdocPatient(models.Model): 
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,primary_key=True)
     first_name = models.CharField(max_length= 200, null=True, blank = True) #change first name and last
     last_name = models.CharField(max_length= 200, null=True, blank = True)
     gender = models.CharField(max_length= 200, null=True, blank = True)
     email = models.CharField(max_length= 200, null=True, blank = True)
     date_of_birth = models.DateField(null = True, blank = True)
-    username = models.CharField(('Phone Number'), validators=[phone_regex], max_length=17, unique=True)
     height = models.IntegerField(null = True, blank = True)
     weight = models.IntegerField(null = True, blank = True)
     blood_group = models.CharField(max_length=10,null = True, blank = True)
     profile_picture = models.CharField(max_length= 50,null=True, blank=True)
+
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
-#need to add field user type
-    
 
     USERNAME_FIELD = 'username'
-#    objects = PatientmasterManager()
-#   def __str__(self):
-#        return (self.patient_first_name,self.patient_last_name)
-
-
 
 
 class ConsultantDiseaseTable(models.Model):
@@ -55,7 +72,8 @@ class ConsultantDiseaseTable(models.Model):
     class Meta:
         db_table= 'consultant_disease_table'
 
-class SpecalityMastertable(models.Model):
+"""
+class SpecalityMastertable(models.Model): #DoctorSpecalities
 
     specality_name = models.CharField(max_length = 200, null = True, blank = True)
     specality_description = models.CharField(max_length = 400, null = True, blank = True)
@@ -83,14 +101,12 @@ class Doctors(models.Model):
         return self.name
 
 
-
-
 class DoctorsSchedule(models.Model):
-    doctor = models.ForeignKey(Doctors, on_delete=models.CASCADE)
+    doctor = models.ForeignKey(GrabdocDoctor, on_delete=models.CASCADE)
     time_slot = models.DateTimeField(null=True)
     def __str__(self):
         return self.doctor.name
-
+"""
 
 class PatientSummary(models.Model):
     summary = models.TextField(null=True, blank = True)
@@ -99,7 +115,7 @@ class PatientSummary(models.Model):
 
 
 class PatientSchedule(models.Model):
-    doctors_schedule = models.ForeignKey(DoctorsSchedule, on_delete=models.CASCADE)
+    doctor_time_slot = models.ForeignKey('doctors_app.DoctorTimeSlots', on_delete=models.CASCADE)
     user = models.ForeignKey(GrabdocUser, on_delete=models.CASCADE)
     status_choices =(
         ('Upcoming','Upcoming'),
@@ -108,11 +124,11 @@ class PatientSchedule(models.Model):
     )
     status = models.CharField(max_length=20,choices=status_choices,default= 'Upcoming')
     def __str__(self):
-        return f'{self.doctors_schedule} {self.user}'
+        return f'{self.doctor_time_slot} {self.user}'
         
 
     class Meta:
-        unique_together = ('doctors_schedule', 'user',)
+        unique_together = ('doctor_time_slot', 'user',)
 
 
 class FamilyMember(models.Model):
@@ -177,7 +193,7 @@ class PatientScheduleMedicalRecord(models.Model):
 
 
 class Reviews(models.Model):
-    doctor = models.ForeignKey(Doctors, on_delete=models.CASCADE,related_name='reviews_doctor')
+    doctor = models.ForeignKey('doctors_app.GrabdocDoctor', on_delete=models.CASCADE,related_name='reviews_doctor')
     user = models.ForeignKey(GrabdocUser, on_delete=models.CASCADE)
     comment = models.TextField(null=True, blank = True)
     rating = models.IntegerField(default=0)
@@ -188,6 +204,8 @@ class Notification(models.Model):
     reference_user =  models.ForeignKey(GrabdocUser, on_delete=models.SET_DEFAULT,related_name='reference_user',default=None,null=True)
     notification_text = models.TextField(null=True, blank = True)
     notification_date  = models.DateTimeField(auto_now_add=True, blank=True)
+    def __str__(self):
+        return f'{self.user_id} ,{self.notification_text}'
 
 #user d
 # user, device_id push_token ctime utime time_zone login_status bollen field
@@ -225,3 +243,4 @@ class Payments(models.Model):
     status = models.CharField(max_length=20,choices=status_choices,default="Init")
     ctime = models.DateTimeField(auto_now_add=True, blank=True)
     utime = models.DateTimeField(auto_now_add=True, blank=True)
+
