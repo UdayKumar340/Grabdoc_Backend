@@ -34,6 +34,8 @@ GrabdocDoctor = apps.get_model('doctors_app', 'GrabdocDoctor') # Doctors
 DoctorTimeSlots = apps.get_model('doctors_app', 'DoctorTimeSlots') #DoctorsSchedule
 DoctorSpecalities = apps.get_model('doctors_app', 'DoctorSpecalities')#DoctorSpecalities
 
+from . import grabdoc_email
+
 
 
 #authentication_classes = [TokenAuthentication]
@@ -150,28 +152,102 @@ class verifiyOtp(APIView):
         except  Exception as e:
             print(e)
             return Response({"staus":404,"error_meassege":"someting went worng"})
+    
 
 
-    def patch(self, request):
+class ResendOtpView(APIView):
+    
+    def post(self, request):
         try:
             data = request.data
+            registration_id = data.get('registration_id')
 
-            user_obj = Mobile_Reg.objects.filter(phone_number = data.get("phone_number"))
+ 
+            mr_obj = Mobile_Reg.objects.get(id = registration_id)
+            device_id = data.get('device_id')
+            print("mr object",mr_obj)
+            print("device_id",device_id)
 
-            if not user_obj.exists():
-                return Response ({'status':404 , 'message': " no user found!"})
+            if mr_obj .device_id != device_id:
+                return Response({"status":400})
 
-            status, time = send_otp_ot_mobile(data.get('phone_number'), user_obj[0] )
-            if status:
-                return Response ({'status':200 , 'message': "New OTP sent"})
 
-            return Response ({'status':404 , 'message': f"try after few seconds{time}"})
+            if mr_obj.number_of_attements >= 3:
+                return Response({"status": 400, "error": "Too many attempts"})
 
+            resend_otp = mr_obj.otp
+            mr_obj.number_of_attements += 1
+            mr_obj.save()
+            print("resend_otp", resend_otp)
+
+            if mr_obj.phone_number in settings.TWILIO_VERIFIED_PHONE_NUMBERS:
+                account_sid = settings.TWILIO_ACCOUNT_SID
+                auth_token = settings.TWILIO_AUTH_TOKEN
+                client = Client(account_sid, auth_token)
+                message = client.messages.create(
+                    body=f"Your new OTP is: {resend_otp}",
+                    from_='+12624760662',  # Your Twilio number
+                    to=mr_obj.phone_number
+                )
+
+            return Response({"status": 200, "message": "New OTP sent successfully", "success": True})
         
-        except  Exception as e:
+        except Mobile_Reg.DoesNotExist:
+            return Response({"status": 404, "error_message": "Registration not found"})
+
+        except Exception as e:
             print(e)
-        
-        return Response ({'status':404 , 'error':"someting went worng"})
+            return Response({"status": 404, "error_message": "Something went wrong Resend otp view server error  "})
+
+"""
+
+
+
+class ResendOtpView(APIView):
+
+    def post(self, request):
+        try:
+            data = request.data
+            registration_id = data.get('registration_id')
+            mr_obj = Mobile_Reg.objects.get(id=registration_id)
+            print("mr_obj", mr_obj)
+
+            if mr_obj.number_of_attempts >= 3:
+                return Response({"status": 400, "error": "Too many attempts"})
+
+            otp = mr_obj.otp
+            mr_obj.number_of_attements += 1
+            mr_obj.save()
+
+            account_sid = settings.TWILIO_ACCOUNT_SID
+            auth_token = settings.TWILIO_AUTH_TOKEN
+            try:
+                client = Client(account_sid, auth_token)
+                message = client.messages.create(
+                    body=f"Your OTP is: {otp}",
+                    from_='+12624760662',  # Your Twilio number
+                    to=mr_obj.phone_number
+                )
+            except:
+                traceback.print_exc()
+
+            return Response({'status': 200, 'message': "OTP resent successfully", "success": True})
+
+        except Mobile_Reg.DoesNotExist:
+            return Response({"status": 404, "error_message": "Registration not found"})
+        except Exception as e:
+            print(e)
+            return Response({"status": 500, "error_message": "Internal Server Error"})
+
+
+"""
+
+
+
+
+
+
+
 
 
 
@@ -301,7 +377,7 @@ class DoctorsView(APIView):
             serlizer_data = DoctorsSerializer(rows, many=True)
             return Response(serlizer_data.data)
         else:
-            row =  GrabdocDoctor.objects.get(id = doctor_id)
+            row =  GrabdocDoctor.objects.get(user_id = doctor_id)
             serlizer_data = DoctorsSerializer(row)
             return Response(serlizer_data.data)
     
@@ -336,8 +412,8 @@ class PatientSummaryView(APIView):
 
 
 
-    def get(self,request,user_id):
-        row =  PatientSummary.objects.filter(user_id = user_id).first()
+    def get(self,request,patient_schedule_id):
+        row =  PatientSummary.objects.filter(patient_schedule_id = patient_schedule_id).first()
         
         if row is not None:
 
@@ -345,31 +421,7 @@ class PatientSummaryView(APIView):
             return Response(serlizer_data.data)
         else:
             rdata = {"summary":""}
-            return Response(rdata)
-    
-    def post(self, request,user_id):
-
-        try:
-            updated_data ={'user_id': user_id,'summary': request.data.get('summary', '')}
-            print(updated_data)
-        
-
-            serlizer_data = PatientSummarySerializer(data=updated_data)
-            print("what data coming",serlizer_data)
-
-            if serlizer_data.is_valid():
-                data ={"summary":serlizer_data.data['summary']}
-                summary_obj, created = PatientSummary.objects.update_or_create(pk = user_id, defaults= data) #summary= serlizer_data.data['summary']
-                summary_obj.save()
-                return Response(serlizer_data.data, status=status.HTTP_201_CREATED)
-            else:
-
-                response_data ={"success":False,'errors':serializer_data.errors,"error_meassege":"validation failed"}    
-                print(serializer_data.errors)
-                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-        except  Exception as e:
-            print(e)
-            return Response ({'status':404 , 'error':"PatientSummaryView server error"})                     
+            return Response(rdata)                
             
 
 
@@ -421,6 +473,8 @@ class PatientScheduleView(APIView):
                     fcm_tokens = [ud_obj.push_token]
                     FCMThread("Appointment", notification_text, fcm_tokens).start()
 
+                grabdoc_email.send("Appointment scheduled",notification_text,gd_patient.email)        
+
 
 
                 # this one Doctor notification
@@ -435,6 +489,7 @@ class PatientScheduleView(APIView):
                     notification_text = notification_text
                 )
                 notification.save()
+                
                 print("notification_text for doctor:",notification_text)
 
                 ud_obj = UserDevice.objects.filter(user_id=ps_obj.doctor_time_slot.doctor_id).first()
@@ -442,6 +497,8 @@ class PatientScheduleView(APIView):
                 if ud_obj and ud_obj.push_token:
                     fcm_tokens = [ud_obj.push_token]
                     FCMThread("Appointment", notification_text, fcm_tokens).start()
+
+                grabdoc_email.send("Appointment scheduled",notification_text,ps_obj.doctor_time_slot.doctor.email)
 
                 
                 return Response({"success":True}, status=status.HTTP_201_CREATED) # booking doctor time slot send notification time and doctor name
@@ -607,8 +664,6 @@ class MedicalRecordView(APIView):
         records = MedicalRecord.objects.filter(user = request.user)
         serlizer_data = MedicalRecordSerializer(records, many=True)
         return Response(serlizer_data.data)
-
-
     
     def post(self, request):
         try:
@@ -856,3 +911,9 @@ class AgoraView(APIView):
             print("The token for RTC",token_number)
             return Response ({"success":True,"token":token_number})
 """
+
+
+
+
+
+

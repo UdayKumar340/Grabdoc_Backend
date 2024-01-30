@@ -64,17 +64,23 @@ class DoctorsSerializer(serializers.ModelSerializer):
 
     specality_name = serializers.CharField(source='specality.specality_name', read_only=True)
 
+
     rating = serializers.SerializerMethodField(read_only=True)
 
     def get_rating(self, obj):
         return Reviews.objects.filter(doctor=obj).aggregate(avgs=Avg(F('rating'))).get('avgs',None)
     
         #return obj.album_set.aggregate(avgs=Avg(F('num_stars'))).get('avgs',None)
+    patient_count = serializers.SerializerMethodField(read_only=True)
+
+    def get_patient_count(self,obj):
+        return PatientSchedule.objects.filter(doctor_time_slot__doctor = obj).count()
+
 
     id = serializers.IntegerField(source='user_id',read_only=True)
     class Meta:
         model = GrabdocDoctor
-        fields = ['id','name',"profile_picture",'specality_id','specality_name','experience','designation','online','language','location','about_doctor',"fee",'rating','video_consultation']
+        fields = ['id','name',"profile_picture",'specality_id','specality_name','experience','designation','online','language','location','about_doctor',"fee",'rating','video_consultation','patient_count']
 
 class DoctorsScheduleSerializer(serializers.ModelSerializer):
 
@@ -90,7 +96,7 @@ class DoctorsScheduleSerializer(serializers.ModelSerializer):
 class PatientSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = PatientSummary
-        fields = ['summary','user_id']
+        fields = ['summary','patient_schedule_id','ctime']
 
 
 class PatientScheduleSerializer(serializers.ModelSerializer):
@@ -105,8 +111,6 @@ class PatientScheduleSerializer(serializers.ModelSerializer):
     doctor_id = serializers.CharField(source='doctor_time_slot.doctor_id',read_only=True)
     time_slot = serializers.CharField(source='doctor_time_slot.time_slot',read_only=True)
     
-
-
 
     class Meta:
         model = PatientSchedule

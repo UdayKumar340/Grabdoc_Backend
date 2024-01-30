@@ -7,6 +7,16 @@ from django.db.models import Avg, F
 from django.apps import apps
 PatientSchedule = apps.get_model('patient_app', 'PatientSchedule')
 
+
+MedicalRecord = apps.get_model('patient_app', 'MedicalRecord')
+
+PatientSummary = apps.get_model('patient_app', 'PatientSummary')
+
+
+Reviews = apps.get_model('patient_app', 'Reviews')
+
+Notification = apps.get_model('patient_app', 'Notification')
+
 class DoctorSpecalitiesSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -59,3 +69,40 @@ class DoctorsScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = PatientSchedule
         fields = ["doctors_schedule_id","doctors_name","user_id",'patient_first_name',"patient_last_name",'status','doctor_experience','doctor_designation','doctor_specality','doctor_id','time_slot']
+
+
+class MedicalRecordSerializer(serializers.ModelSerializer):
+    
+    family_member_name = serializers.CharField(source='family_member.relationship',read_only=True)
+
+
+    class Meta:
+        model = MedicalRecord
+        fields = ["user_id",'family_member_id','family_member_name','record_name','file_name','record_date']
+
+
+
+
+class PatientSummarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PatientSummary
+        fields = ['summary','patient_schedule_id','ctime']
+
+
+class ReviewsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reviews
+        fields = ['doctor_id','user_id','comment','rating','review_date']
+
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+
+    profile_picture= serializers.SerializerMethodField(read_only=True)
+
+    def get_profile_picture(self, obj):
+        return None
+#we need deside notification type which image doctor or system image
+    class Meta:
+        model = Notification
+        fields = ['user_id','notification_text','notification_date','reference_user_id','profile_picture']

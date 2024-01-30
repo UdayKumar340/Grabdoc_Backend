@@ -5,6 +5,8 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import User 
 from django.conf import settings
+
+
 """
 from django.apps import apps
 GrabdocDoctor = apps.get_model('doctors_app', 'GrabdocDoctor') # Doctors
@@ -72,6 +74,7 @@ class ConsultantDiseaseTable(models.Model):
     class Meta:
         db_table= 'consultant_disease_table'
 
+
 """
 class SpecalityMastertable(models.Model): #DoctorSpecalities
 
@@ -108,10 +111,6 @@ class DoctorsSchedule(models.Model):
         return self.doctor.name
 """
 
-class PatientSummary(models.Model):
-    summary = models.TextField(null=True, blank = True)
-    user = models.OneToOneField(GrabdocUser, on_delete=models.CASCADE,primary_key=True)
-
 
 
 class PatientSchedule(models.Model):
@@ -129,6 +128,15 @@ class PatientSchedule(models.Model):
 
     class Meta:
         unique_together = ('doctor_time_slot', 'user',)
+
+
+
+class PatientSummary(models.Model):
+    summary = models.TextField(null=True, blank = True)
+    patient_schedule =  models.OneToOneField(PatientSchedule, on_delete=models.CASCADE)
+    ctime = models.DateTimeField(auto_now_add=True, blank=True)
+
+
 
 
 class FamilyMember(models.Model):
@@ -170,8 +178,6 @@ class MedicalRecord(models.Model):
     def __str__(self):
         return f'{self.family_member} {self.record_name} {self.record_date}'
     
-
-
 
 
 

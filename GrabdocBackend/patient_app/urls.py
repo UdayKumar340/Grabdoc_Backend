@@ -5,6 +5,9 @@ from patient_app.views import *
 urlpatterns = [
     path('mobileregistion/',MobileRegView.as_view()),
     path('verifiy-otp/', verifiyOtp.as_view()),
+
+    path('resend-otp/', ResendOtpView.as_view()),
+
     path('login/', PatientLoginView.as_view()),
     path('details/', PatientDetailsUpdate.as_view()),
 
@@ -21,7 +24,7 @@ urlpatterns = [
     path('doctor_time_slots/<int:doctor_id>',Doctors_slot_View.as_view()),
 
 
-    path('patient-summary/<int:user_id>',PatientSummaryView.as_view()),
+    path('patient-summary/<int:patient_schedule_id>',PatientSummaryView.as_view()),
 
     path('patient-schedule/', PatientScheduleView.as_view()),
 

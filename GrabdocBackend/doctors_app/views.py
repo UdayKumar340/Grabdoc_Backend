@@ -21,7 +21,14 @@ from rest_framework.permissions import IsAuthenticated
 from django.apps import apps
 PatientSchedule = apps.get_model('patient_app', 'PatientSchedule')
 
+MedicalRecord = apps.get_model('patient_app', 'MedicalRecord')
 
+PatientSummary = apps.get_model('patient_app', 'PatientSummary')
+
+Reviews = apps.get_model('patient_app', 'Reviews')
+
+
+Notification = apps.get_model('patient_app', 'Notification')
 
 class LoginView(APIView):
     def post(self, request):
@@ -235,3 +242,84 @@ class DoctorsScheduleView(APIView):
         rows = PatientSchedule.objects.filter(doctor = request.user,status=status)
         serlizer_data = PatientScheduleSerializer(rows, many=True)
         return Response(serlizer_data.data)
+
+class MedicalRecordView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+        
+    def get(self,request,patient_id):
+        records = MedicalRecord.objects.filter( user_id= patient_id)
+        serlizer_data = MedicalRecordSerializer(records, many=True)
+        return Response(serlizer_data.data)
+"""
+def get(self,request,patient_id):
+        records = MedicalRecord.objects.filter( user_id= patient_id)
+        serlizer_data = MedicalRecordSerializer(records, many=True)
+        return Response(serlizer_data.data)
+
+"""
+
+
+class PatientSummaryView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
+
+    def get(self,request,patient_schedule_id):
+        row =  PatientSummary.objects.filter(patient_schedule_id = patient_schedule_id).first()
+        
+        if row is not None:
+
+            serlizer_data = PatientSummarySerializer(row)
+            return Response(serlizer_data.data)
+        else:
+            rdata = {"summary":""}
+            return Response(rdata)
+    
+    def post(self, request,patient_schedule_id):
+
+        try:
+            updated_data ={'patient_schedule_id': patient_schedule_id,'summary': request.data.get('summary', '')}
+            print(updated_data)
+        
+
+            serlizer_data = PatientSummarySerializer(data=updated_data)
+            print("what data coming",serlizer_data)
+
+            if serlizer_data.is_valid():
+                data ={"summary":serlizer_data.data['summary']}
+                summary_obj, created = PatientSummary.objects.update_or_create(pk = patient_schedule_id, defaults= data) #summary= serlizer_data.data['summary']
+                summary_obj.save()
+                return Response(serlizer_data.data, status=status.HTTP_201_CREATED)
+            else:
+
+                response_data ={"success":False,'errors':serializer_data.errors,"error_meassege":"validation failed"}    
+                print(serializer_data.errors)
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        except  Exception as e:
+            print(e)
+            return Response ({'status':404 , 'error':"PatientSummaryView server error"})
+
+
+
+class ReviewsView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        review_objs = Reviews.objects.filter(doctor_id= request.user.id)
+        serlizer_data = ReviewsSerializer(review_objs, many=True)
+        return Response(serlizer_data.data)
+
+
+
+class NotificationView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        notifi_objs = Notification.objects.filter(user_id= request.user.id)
+        serlizer_data = NotificationSerializer(notifi_objs, many=True)
+        return Response(serlizer_data.data)
+
