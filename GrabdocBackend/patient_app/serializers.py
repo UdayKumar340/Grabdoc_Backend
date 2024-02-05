@@ -8,7 +8,7 @@ from django.db.models import Avg, F
 from django.apps import apps
 GrabdocDoctor = apps.get_model('doctors_app', 'GrabdocDoctor') # Doctors
 DoctorTimeSlots = apps.get_model('doctors_app', 'DoctorTimeSlots') #DoctorsSchedule
-DoctorSpecalities = apps.get_model('doctors_app', 'DoctorSpecalities')#DoctorSpecalities
+DoctorSpecialities = apps.get_model('doctors_app', 'DoctorSpecialities')#DoctorSpecialities
 
 
 
@@ -37,7 +37,10 @@ class GrabdocPatientSerializer(serializers.ModelSerializer): #PatientMasterTable
     class Meta:
         model = GrabdocPatient
         read_only_fields = ["phonenumber",'user_id',]
-        fields = ['user_id',"first_name","last_name","gender","email",'date_of_birth','height','weight','blood_group',"phonenumber"] 
+        fields = [
+            'user_id',"first_name","last_name","gender","email",'date_of_birth','height',
+            'weight','blood_group',"phonenumber"
+        ] 
     
     def create(self, validated_data):
         return super().create(validated_data)
@@ -53,16 +56,16 @@ class ConsultantDiseaseTableSerializer(serializers.ModelSerializer):
     
 
 
-class SpecalityMastertableSerializer(serializers.ModelSerializer):
+class SpecialityMastertableSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = DoctorSpecalities
-        fields =['id','specality_name', 'specality_description']
+        model = DoctorSpecialities
+        fields =['id','speciality_name', 'speciality_description']
 
 
 class DoctorsSerializer(serializers.ModelSerializer):
 
-    specality_name = serializers.CharField(source='specality.specality_name', read_only=True)
+    speciality_name = serializers.CharField(source='speciality.speciality_name', read_only=True)
 
 
     rating = serializers.SerializerMethodField(read_only=True)
@@ -80,7 +83,11 @@ class DoctorsSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(source='user_id',read_only=True)
     class Meta:
         model = GrabdocDoctor
-        fields = ['id','name',"profile_picture",'specality_id','specality_name','experience','designation','online','language','location','about_doctor',"fee",'rating','video_consultation','patient_count']
+        fields = [
+            'id','name',"profile_picture",'speciality_id','speciality_name',
+            'experience','designation','online','language','location','about_doctor',"fee",
+            'rating','video_consultation','patient_count'
+        ]
 
 class DoctorsScheduleSerializer(serializers.ModelSerializer):
 
@@ -101,21 +108,34 @@ class PatientSummarySerializer(serializers.ModelSerializer):
 
 class PatientScheduleSerializer(serializers.ModelSerializer):
     doctors_name = serializers.CharField(source='doctor_time_slot.doctor.name',read_only=True)
-
-    patient_first_name = serializers.CharField(source='user.first_name',read_only=True)
-    patient_last_name = serializers.CharField(source='user.last_name',read_only=True)
-
     doctor_experience = serializers.CharField(source='doctor_time_slot.doctor.experience',read_only=True)
     doctor_designation = serializers.CharField(source='doctor_time_slot.doctor.designation',read_only=True)
-    doctor_specality = serializers.CharField(source='doctor_time_slot.doctor.specality',read_only=True)
+    doctor_speciality = serializers.CharField(source='doctor_time_slot.doctor.speciality',read_only=True)
     doctor_id = serializers.CharField(source='doctor_time_slot.doctor_id',read_only=True)
     time_slot = serializers.CharField(source='doctor_time_slot.time_slot',read_only=True)
-    
 
+    doctor_rating = serializers.SerializerMethodField(read_only=True)
+    def get_doctor_rating(self,obj):
+        return Reviews.objects.filter(doctor_id=obj.doctor_time_slot.doctor_id).aggregate(avgs=Avg(F('rating'))).get('avgs',None)
+
+
+    appointment_for_name = serializers.SerializerMethodField(read_only=True)
+    def get_appointment_for_name(self, obj):
+        if obj.appointment_for_id:
+            return f"{obj.appointment_for.first_name} {obj.appointment_for.last_name} ({obj.appointment_for.relationship})"
+        else:
+            print('user_id:', obj.user_id)
+            print('first_name:', obj.user.first_name)
+            print('last_name:', obj.user.last_name)
+            return f"{obj.user.first_name} {obj.user.last_name} (Myself)"
+            
     class Meta:
         model = PatientSchedule
-        fields = ["doctor_time_slot_id","doctors_name","user_id",'patient_first_name',"patient_last_name",'status','doctor_experience','doctor_designation','doctor_specality','doctor_id','time_slot']
-
+        fields = [ 
+            "doctor_time_slot_id", "doctors_name", "user_id", 
+            'appointment_for_name', 'status', 'doctor_experience',
+            'doctor_designation', 'doctor_speciality', 'doctor_id', 'time_slot','doctor_rating'
+        ]
 
 class FamilyMemberSerializer(serializers.ModelSerializer):
     class Meta:

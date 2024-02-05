@@ -17,22 +17,23 @@ Reviews = apps.get_model('patient_app', 'Reviews')
 
 Notification = apps.get_model('patient_app', 'Notification')
 
-class DoctorSpecalitiesSerializer(serializers.ModelSerializer):
+class DoctorSpecialitiesSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = DoctorSpecalities
-        fields =['id','specality_name', 'specality_description']
+        model = DoctorSpecialities
+        fields =['id','speciality_name', 'speciality_description']
 
 
 class GrabdocDoctorsSerializer(serializers.ModelSerializer):
-    specality_name = serializers.CharField(source='specality.specality_name',read_only=True)
+    speciality_name = serializers.CharField(source='speciality.speciality_name',read_only=True)
     username = serializers.CharField(source='user.username',read_only=True)
+    
 
 
     class Meta:
         model = GrabdocDoctor
         read_only_fields = ['id','user_id']
-        fields = ["user_id","email","username","name","profile_picture","specality_id","experience","designation","online","video_consultation","language","location","fee","about_doctor","specality_name","default_password"] 
+        fields = ["user_id","email","username","name","profile_picture","speciality_id","experience","designation","online","video_consultation","language","location","fee","about_doctor","speciality_name","default_password"] 
     
     def create(self, validated_data):
         return super().create(validated_data)
@@ -59,7 +60,7 @@ class DoctorsScheduleSerializer(serializers.ModelSerializer):
 
     doctor_experience = serializers.CharField(source='doctors_schedule.doctor.experience',read_only=True)
     doctor_designation = serializers.CharField(source='doctors_schedule.doctor.designation',read_only=True)
-    doctor_specality = serializers.CharField(source='doctors_schedule.doctor.specality',read_only=True)
+    doctor_speciality = serializers.CharField(source='doctors_schedule.doctor.speciality',read_only=True)
     doctor_id = serializers.CharField(source='doctors_schedule.doctor_id',read_only=True)
     time_slot = serializers.CharField(source='doctors_schedule.time_slot',read_only=True)
     
@@ -68,7 +69,7 @@ class DoctorsScheduleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PatientSchedule
-        fields = ["doctors_schedule_id","doctors_name","user_id",'patient_first_name',"patient_last_name",'status','doctor_experience','doctor_designation','doctor_specality','doctor_id','time_slot']
+        fields = ["doctors_schedule_id","doctors_name","user_id",'patient_first_name',"patient_last_name",'status','doctor_experience','doctor_designation','doctor_speciality','doctor_id','time_slot']
 
 
 class MedicalRecordSerializer(serializers.ModelSerializer):

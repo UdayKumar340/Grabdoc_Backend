@@ -5,16 +5,16 @@ from django.core.validators import RegexValidator
 from django.contrib.auth.models import User 
 from django.conf import settings
 
-class DoctorSpecalities(models.Model):
+class DoctorSpecialities(models.Model):
 
-    specality_name = models.CharField(max_length = 200, null = True, blank = True)
-    specality_description = models.CharField(max_length = 400, null = True, blank = True)
+    speciality_name = models.CharField(max_length = 200, null = True, blank = True)
+    speciality_description = models.CharField(max_length = 400, null = True, blank = True)
     def __str__(self):
-        return self.specality_name
+        return self.speciality_name
    
 
     class Meta:
-        db_table = 'doctor_specalities'
+        db_table = 'doctor_specialities'
 
 
 class GrabdocDoctor(models.Model):
@@ -23,7 +23,7 @@ class GrabdocDoctor(models.Model):
     name = models.CharField(max_length= 200, null=True, blank = True)
     designation = models.CharField(max_length= 200, null=True, blank = True)
     email = models.CharField(max_length= 200, null=True, blank = True)
-    specality =  models.ForeignKey(DoctorSpecalities, on_delete=models.CASCADE,null=True,default= None)  
+    speciality =  models.ForeignKey(DoctorSpecialities, on_delete=models.CASCADE,null=True,default= None)  
     experience = models.IntegerField(null = True, blank = True,default= None)
     language = models.CharField(max_length= 200, null=True, blank = True)
     location = models.CharField(max_length= 200, null=True, blank = True)
@@ -34,7 +34,7 @@ class GrabdocDoctor(models.Model):
     fee = models.CharField(max_length= 20, null=True, blank = True)
     password = models.CharField(max_length= 20, null=True, blank = True)
     default_password = models.BooleanField(default= True)
-    
+
 
    
     def __str__(self):

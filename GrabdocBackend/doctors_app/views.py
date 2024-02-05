@@ -107,13 +107,13 @@ class ChangePasswordView(APIView):
 
 
 
-class DoctorsSpecalityView(APIView):
+class DoctorsSpecialityView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, **kwargs):
-        rows =  DoctorSpecalities.objects.all()
-        serlizer_data = DoctorSpecalitiesSerializer(rows, many=True)
+        rows =  DoctorSpecialities.objects.all()
+        serlizer_data = DoctorSpecialitiesSerializer(rows, many=True)
         return Response(serlizer_data.data)    
 
 
@@ -135,7 +135,7 @@ class DoctorsDetails(APIView):
             gd_obj = request.user.grabdocdoctor
             print(gd_obj)
             print(request.data)    
-            updated_data ={'specality_id': request.data.get('specality_id',None),
+            updated_data ={'speciality_id': request.data.get('speciality_id',None),
                             'name': request.data.get('name', ''),
                             'profile_picture': request.data.get('profile_picture', ''),
                             'email': request.data.get('email', ''),

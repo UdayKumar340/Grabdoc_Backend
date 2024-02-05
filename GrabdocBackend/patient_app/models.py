@@ -11,7 +11,7 @@ from django.conf import settings
 from django.apps import apps
 GrabdocDoctor = apps.get_model('doctors_app', 'GrabdocDoctor') # Doctors
 DoctorTimeSlots = apps.get_model('doctors_app', 'DoctorTimeSlots') #DoctorsSchedule
-DoctorSpecalities = apps.get_model('doctors_app', 'DoctorSpecalities')#DoctorSpecalities
+DoctorSpecialities = apps.get_model('doctors_app', 'DoctorSpecialities')#DoctorSpecialities
 """
 #class PatientmasterManager(models.Manager):
 #   def create(self, *args, **kwargs):
@@ -76,22 +76,22 @@ class ConsultantDiseaseTable(models.Model):
 
 
 """
-class SpecalityMastertable(models.Model): #DoctorSpecalities
+class SpecialityMastertable(models.Model): #DoctorSpecialities
 
-    specality_name = models.CharField(max_length = 200, null = True, blank = True)
-    specality_description = models.CharField(max_length = 400, null = True, blank = True)
+    speciality_name = models.CharField(max_length = 200, null = True, blank = True)
+    speciality_description = models.CharField(max_length = 400, null = True, blank = True)
     def __str__(self):
-        return self.specality_name
+        return self.speciality_name
    
 
     class Meta:
-        db_table = 'specality_master_table'
+        db_table = 'speciality_master_table'
 
 
 class Doctors(models.Model):
     name = models.CharField(max_length= 200, null=True, blank = True)
     profile_picture = models.CharField(max_length= 50,null=True, blank=True)
-    specality =  models.ForeignKey(SpecalityMastertable, on_delete=models.CASCADE)
+    speciality =  models.ForeignKey(SpecialityMastertable, on_delete=models.CASCADE)
     experience = models.IntegerField(null = True, blank = True)
     designation = models.CharField(max_length= 200, null=True, blank = True)
     online = models.BooleanField()
@@ -111,36 +111,8 @@ class DoctorsSchedule(models.Model):
         return self.doctor.name
 """
 
-
-
-class PatientSchedule(models.Model):
-    doctor_time_slot = models.ForeignKey('doctors_app.DoctorTimeSlots', on_delete=models.CASCADE)
-    user = models.ForeignKey(GrabdocUser, on_delete=models.CASCADE)
-    status_choices =(
-        ('Upcoming','Upcoming'),
-        ('Completed','Completed'),
-        ('Cancelled','Cancelled')
-    )
-    status = models.CharField(max_length=20,choices=status_choices,default= 'Upcoming')
-    def __str__(self):
-        return f'{self.doctor_time_slot} {self.user}'
-        
-
-    class Meta:
-        unique_together = ('doctor_time_slot', 'user',)
-
-
-
-class PatientSummary(models.Model):
-    summary = models.TextField(null=True, blank = True)
-    patient_schedule =  models.OneToOneField(PatientSchedule, on_delete=models.CASCADE)
-    ctime = models.DateTimeField(auto_now_add=True, blank=True)
-
-
-
-
 class FamilyMember(models.Model):
-    user = models.ForeignKey(GrabdocUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(GrabdocPatient, on_delete=models.CASCADE)
     profile_picture = models.CharField(max_length= 50,null=True, blank=True)
     first_name = models.CharField(max_length= 50)
     last_name = models.CharField(max_length= 50)
@@ -165,9 +137,36 @@ class FamilyMember(models.Model):
         unique_together = ('user','first_name',"last_name")
 
 
+class PatientSchedule(models.Model):
+    doctor_time_slot = models.ForeignKey('doctors_app.DoctorTimeSlots', on_delete=models.CASCADE)
+    user = models.ForeignKey(GrabdocPatient, on_delete=models.CASCADE)
+    status_choices =(
+        ('Upcoming','Upcoming'),
+        ('Completed','Completed'),
+        ('Cancelled','Cancelled')
+    )
+    status = models.CharField(max_length=20,choices=status_choices,default= 'Upcoming')
+    appointment_for = models.ForeignKey(FamilyMember, on_delete=models.SET_DEFAULT, default=None, null=True)
+
+    def __str__(self):
+        return f'{self.doctor_time_slot} {self.user}'
+        
+
+    class Meta:
+        unique_together = ('doctor_time_slot', 'user',)
+
+
+
+class PatientSummary(models.Model):
+    summary = models.TextField(null=True, blank = True)
+    patient_schedule =  models.OneToOneField(PatientSchedule, on_delete=models.CASCADE)
+    ctime = models.DateTimeField(auto_now_add=True, blank=True)
+
+
+
 
 class MedicalRecord(models.Model):
-    user = models.ForeignKey(GrabdocUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(GrabdocPatient, on_delete=models.CASCADE)
     family_member = models.ForeignKey(FamilyMember, on_delete=models.SET_DEFAULT, null=True,default=None)
 
     record_name = models.CharField(max_length= 50)
@@ -226,7 +225,7 @@ class UserDevice(models.Model):
     login_status = models.BooleanField(default = False)
 
 class Payments(models.Model):
-    user = models.ForeignKey(GrabdocUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(GrabdocPatient, on_delete=models.CASCADE)
     patient_schedule = models.ForeignKey(PatientSchedule,on_delete=models.SET_DEFAULT,default=None,null=True)
     payment_choices = (
         ('Pay on Visit','pay on Visit'),

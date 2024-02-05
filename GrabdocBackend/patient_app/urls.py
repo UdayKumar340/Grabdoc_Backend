@@ -15,7 +15,7 @@ urlpatterns = [
 
     path('diseases/', ConsultantDiseaseTableView.as_view()),
 
-    path('specalities/', SpecalityDoctorsView.as_view()),
+    path('specialities/', SpecialityDoctorsView.as_view()),
 
     path('doctors/', DoctorsView.as_view()),
 

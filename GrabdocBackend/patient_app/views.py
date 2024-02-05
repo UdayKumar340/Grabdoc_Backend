@@ -32,7 +32,7 @@ from .FCM import FCMThread
 from django.apps import apps
 GrabdocDoctor = apps.get_model('doctors_app', 'GrabdocDoctor') # Doctors
 DoctorTimeSlots = apps.get_model('doctors_app', 'DoctorTimeSlots') #DoctorsSchedule
-DoctorSpecalities = apps.get_model('doctors_app', 'DoctorSpecalities')#DoctorSpecalities
+DoctorSpecialities = apps.get_model('doctors_app', 'DoctorSpecialities')#DoctorSpecialities
 
 from . import grabdoc_email
 
@@ -175,7 +175,7 @@ class ResendOtpView(APIView):
             if mr_obj.number_of_attements >= 3:
                 return Response({"status": 400, "error": "Too many attempts"})
 
-            resend_otp = mr_obj.otp
+            resend_otp = mr_obj.otp2
             mr_obj.number_of_attements += 1
             mr_obj.save()
             print("resend_otp", resend_otp)
@@ -348,13 +348,13 @@ class ConsultantDiseaseTableView(APIView):
 
 
 
-class SpecalityDoctorsView(APIView):
+class SpecialityDoctorsView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, **kwargs):
-        rows =  DoctorSpecalities.objects.all()
-        serlizer_data = SpecalityMastertableSerializer(rows, many=True)
+        rows =  DoctorSpecialities.objects.all()
+        serlizer_data = SpecialityMastertableSerializer(rows, many=True)
         return Response(serlizer_data.data)    
 
 
@@ -368,11 +368,11 @@ class DoctorsView(APIView):
         if doctor_id is None:
             # get sp_id  from request.data.get()
             # if sp_id is not None: filter the doctors of the splist
-            specality_id  = request.GET.get('specality_id', None)
-            if specality_id is None:
+            speciality_id  = request.GET.get('speciality_id', None)
+            if speciality_id is None:
                 rows = GrabdocDoctor.objects.all()
             else:
-                rows = GrabdocDoctor.objects.filter(specality_id=specality_id)
+                rows = GrabdocDoctor.objects.filter(speciality_id=speciality_id)
             
             serlizer_data = DoctorsSerializer(rows, many=True)
             return Response(serlizer_data.data)
@@ -430,8 +430,10 @@ class PatientScheduleView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self,request):
+        print("request data", request.GET)
         status = request.GET.get('status','Upcoming')
-        rows = PatientSchedule.objects.filter(user = request.user,status=status) #chaning patinet=user
+        rows = PatientSchedule.objects.filter(user_id=request.user.id, status=status) #chaning patinet=user
+        print("rows data",rows)
         serlizer_data = PatientScheduleSerializer(rows, many=True)
         return Response(serlizer_data.data)
     
@@ -442,18 +444,26 @@ class PatientScheduleView(APIView):
             print("gd_patient:", gd_patient)
             print(request.data)
             
-            updated_data ={'user_id': user_obj.id,'doctor_time_slot_id': request.data.get('doctor_time_slot_id', '')}
+            updated_data = {
+                'user_id': user_obj.id,
+                'doctor_time_slot_id': request.data.get('doctor_time_slot_id', None),
+                'appointment_for_id': request.data.get('appointment_for_id', None)
+            }
 
             serializer_data= PatientScheduleSerializer(data = updated_data) 
 
             if serializer_data.is_valid():
-                ps_obj, created = PatientSchedule.objects.update_or_create(user_id = user_obj.id, doctor_time_slot_id = request.data.get('doctor_time_slot_id', ''))
+                ps_obj, created = PatientSchedule.objects.update_or_create(
+                    user_id = user_obj.id, 
+                    doctor_time_slot_id = request.data.get('doctor_time_slot_id', None),
+                    appointment_for_id = request.data.get('appointment_for_id', None)
+                )
 
                 Doctor_Name = ps_obj.doctor_time_slot.doctor.name
 
                 Appoinment_date = ps_obj.doctor_time_slot.time_slot
-                print("Doctor_Name:",Doctor_Name)
-                print('Appointment_date:',Appoinment_date)
+                print("Doctor_Name:", Doctor_Name)
+                print('Appointment_date:', Appoinment_date)
                 
                 Format_Appoinment= Appoinment_date.strftime("At %I:%M %p On %d %b")
                 #Todo: fromat date time is human readble text dec 15 4.30 am/pm
@@ -575,17 +585,17 @@ class FamilyMemberView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        members = FamilyMember.objects.filter(user = request.user)
+        members = FamilyMember.objects.filter(user_id = request.user.id)
         serlizer_data = FamilyMemberSerializer(members, many=True)
         return Response(serlizer_data.data)
 
     
     def post(self, request):
         try:
-            user_obj = request.user
+            user_id = request.user.id
             print(request.data)
             
-            updated_data ={'user_id':user_obj.id,
+            updated_data ={'user_id': user_id,
                             'first_name': request.data.get('first_name', ''),
                             'last_name': request.data.get('last_name', ''),
                             'gender': request.data.get('gender', ''),
@@ -604,7 +614,7 @@ class FamilyMemberView(APIView):
                             'profile_picture': request.data.get('profile_picture', '')
 
                             }
-                fm_obj, created = FamilyMember.objects.update_or_create(user_id = user_obj.id, 
+                fm_obj, created = FamilyMember.objects.update_or_create(user_id = user_id, 
                     first_name = request.data.get('first_name', ''),
                     last_name= request.data.get('last_name', ''), defaults= data)
 
@@ -661,7 +671,7 @@ class MedicalRecordView(APIView):
 
 
     def get(self,request):
-        records = MedicalRecord.objects.filter(user = request.user)
+        records = MedicalRecord.objects.filter(user_id = request.user.id)
         serlizer_data = MedicalRecordSerializer(records, many=True)
         return Response(serlizer_data.data)
     

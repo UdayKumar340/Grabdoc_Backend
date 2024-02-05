@@ -25,7 +25,7 @@ class ConsultantDiseaseTableAdmin(admin.ModelAdmin):
   list_display = ("id", "disease_type")
 admin.site.register(ConsultantDiseaseTable,ConsultantDiseaseTableAdmin)
 
-#admin.site.register(SpecalityMastertable)
+#admin.site.register(SpecialityMastertable)
 
 #admin.site.register(Doctors)
 
