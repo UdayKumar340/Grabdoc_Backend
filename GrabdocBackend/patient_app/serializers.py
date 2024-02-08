@@ -132,7 +132,7 @@ class PatientScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = PatientSchedule
         fields = [ 
-            "doctor_time_slot_id", "doctors_name", "user_id", 
+           "id", "doctor_time_slot_id", "doctors_name", "user_id", 
             'appointment_for_name', 'status', 'doctor_experience',
             'doctor_designation', 'doctor_speciality', 'doctor_id', 'time_slot','doctor_rating'
         ]
@@ -151,7 +151,7 @@ class MedicalRecordSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MedicalRecord
-        fields = ["user_id",'family_member_id','family_member_name','record_name','file_name','record_date']
+        fields = ["id","user_id",'family_member_id','family_member_name','record_name','file_name','record_date']
 
 
 
