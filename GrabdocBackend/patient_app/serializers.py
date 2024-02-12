@@ -103,7 +103,7 @@ class DoctorsScheduleSerializer(serializers.ModelSerializer):
 class PatientSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = PatientSummary
-        fields = ['summary','patient_schedule_id','ctime']
+        fields = ["id",'summary','patient_schedule_id','ctime']
 
 
 class PatientScheduleSerializer(serializers.ModelSerializer):
@@ -169,9 +169,16 @@ class PatientScheduleMedicalRecordSerializer(serializers.ModelSerializer):
 
 
 class ReviewsSerializer(serializers.ModelSerializer):
+
+    patient_name = serializers.SerializerMethodField(read_only=True)
+    def get_patient_name(self, obj):
+            return f"{obj.user.first_name} {obj.user.last_name}"
+
+
+
     class Meta:
         model = Reviews
-        fields = ['doctor_id','user_id','comment','rating','review_date']
+        fields = ['doctor_id','user_id','comment','rating','review_date',"rating1","rating2","rating3","rating4","patient_name"]
 
 class NotificationSerializer(serializers.ModelSerializer):
 

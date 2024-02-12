@@ -10,6 +10,7 @@ import datetime
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from django.db.models import Avg, F
 
 from django.conf import settings
 
@@ -756,19 +757,32 @@ class ReviewsView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get(self, request,doctor_id=None):
+    def get(self, request, doctor_id=None):
         review_objs = Reviews.objects.filter(doctor_id=doctor_id)
         serlizer_data = ReviewsSerializer(review_objs, many=True)
-        return Response(serlizer_data.data)
+        reviews = serlizer_data.data
+        rating = Reviews.objects.filter(doctor_id=doctor_id).aggregate(avgs=Avg(F('rating'))).get('avgs', None)
+        doctor = GrabdocDoctor.objects.get(user_id=doctor_id)
+
+        response_data = {
+            'reviews': reviews,
+            'rating': rating,
+            'review_count': len(reviews),
+            'doctor_name': doctor.name,
+            'profile_picture':doctor.profile_picture,
+        }
+
+        return Response(response_data)
+
 
     def post(self, request,doctor_id=None):
         try:
             print(request.data)
             
-            updated_data ={'user_id': request.data.get("user_id", ''),
+            updated_data ={'user_id': request.user.id ,
                             'doctor_id': request.data.get('doctor_id', ''),
                             'comment': request.data.get('comment', ''),
-                            'rating': request.data.get('rating', ''),
+                            'rating': request.data.get('rating', 1),
                         }
 
             serializer_data= ReviewsSerializer(data = updated_data) 

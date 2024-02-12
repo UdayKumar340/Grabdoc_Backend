@@ -32,13 +32,13 @@ admin.site.register(ConsultantDiseaseTable,ConsultantDiseaseTableAdmin)
 #admin.site.register(DoctorsSchedule)
 
 class PatientSummaryAdmin(admin.ModelAdmin):
-  list_display = ("patient_schedule", "summary","ctime")
+  list_display = ("patient_schedule_id", "summary","ctime")
 admin.site.register(PatientSummary,PatientSummaryAdmin)
 
 
 
 class PatientScheduleAdmin(admin.ModelAdmin):
-  list_display = ("user_id", "doctor_time_slot","status")
+  list_display = ("id","user_id", "doctor_time_slot","status")
 admin.site.register(PatientSchedule,PatientScheduleAdmin)
 
 

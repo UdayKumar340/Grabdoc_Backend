@@ -149,7 +149,7 @@ class PatientSchedule(models.Model):
     appointment_for = models.ForeignKey(FamilyMember, on_delete=models.SET_DEFAULT, default=None, null=True)
 
     def __str__(self):
-        return f'{self.doctor_time_slot} {self.user}'
+        return f'{self.id}| {self.doctor_time_slot}| {self.user}'
         
 
     class Meta:
@@ -199,9 +199,13 @@ class PatientScheduleMedicalRecord(models.Model):
 
 class Reviews(models.Model):
     doctor = models.ForeignKey('doctors_app.GrabdocDoctor', on_delete=models.CASCADE,related_name='reviews_doctor')
-    user = models.ForeignKey(GrabdocUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(GrabdocPatient, on_delete=models.CASCADE)
     comment = models.TextField(null=True, blank = True)
     rating = models.IntegerField(default=0)
+    rating1 = models.IntegerField(default=0)
+    rating2 = models.IntegerField(default=0)
+    rating3 = models.IntegerField(default=0)
+    rating4 = models.IntegerField(default=0)
     review_date = models.DateField(auto_now_add=True, blank = True)
 
 class Notification(models.Model):
