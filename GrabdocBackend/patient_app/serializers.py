@@ -173,12 +173,19 @@ class ReviewsSerializer(serializers.ModelSerializer):
     patient_name = serializers.SerializerMethodField(read_only=True)
     def get_patient_name(self, obj):
             return f"{obj.user.first_name} {obj.user.last_name}"
+    
+    profile_picture = serializers.CharField(source='user.profile_picture',read_only=True)
+    
 
 
 
     class Meta:
         model = Reviews
-        fields = ['id','doctor_id','user_id','comment','rating','review_date',"rating1","rating2","rating3","rating4","patient_name"]
+        fields = [
+            'id','doctor_id','user_id','comment','rating',
+            'review_date',"rating1","rating2","rating3","rating4","patient_name",
+            'profile_picture'
+        ]
 
 class NotificationSerializer(serializers.ModelSerializer):
 
