@@ -178,7 +178,7 @@ class ReviewsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reviews
-        fields = ['doctor_id','user_id','comment','rating','review_date',"rating1","rating2","rating3","rating4","patient_name"]
+        fields = ['id','doctor_id','user_id','comment','rating','review_date',"rating1","rating2","rating3","rating4","patient_name"]
 
 class NotificationSerializer(serializers.ModelSerializer):
 
