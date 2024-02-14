@@ -174,6 +174,7 @@ class MedicalRecord(models.Model):
     file_name = models.CharField(max_length= 50,null=True, blank=True)
 
     record_date = models.DateField(null = True, blank = True)
+    
     def __str__(self):
         return f'{self.family_member} {self.record_name} {self.record_date}'
     

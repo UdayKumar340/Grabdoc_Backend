@@ -39,7 +39,7 @@ class GrabdocPatientSerializer(serializers.ModelSerializer): #PatientMasterTable
         read_only_fields = ["phonenumber",'user_id',]
         fields = [
             'user_id',"first_name","last_name","gender","email",'date_of_birth','height',
-            'weight','blood_group',"phonenumber"
+            'weight','blood_group',"phonenumber","profile_picture"
         ] 
     
     def create(self, validated_data):

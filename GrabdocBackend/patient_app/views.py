@@ -302,7 +302,8 @@ class PatientDetailsUpdate(APIView):
                             'last_name': request.data.get('last_name', ''),
                             'gender': request.data.get('gender', ''),
                             'email': request.data.get('email', ''),
-                            'date_of_birth': request.data.get('date_of_birth', '')
+                            'date_of_birth': request.data.get('date_of_birth', ''),
+
                         
                             }
             if 'height' in request.data:
@@ -311,6 +312,8 @@ class PatientDetailsUpdate(APIView):
                 updated_data['weight']=request.data.get('weight')
             if 'blood_group' in request.data:
                 updated_data['blood_group']=request.data.get('blood_group')
+            if 'profile_picture' in request.data:
+                updated_data['profile_picture']=request.data.get('profile_picture')
 
             serializer_data= GrabdocPatientSerializer(gd_patient, data = updated_data) 
 
