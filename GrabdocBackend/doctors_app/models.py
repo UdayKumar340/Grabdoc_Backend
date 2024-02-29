@@ -5,8 +5,21 @@ from django.core.validators import RegexValidator
 from django.contrib.auth.models import User 
 from django.conf import settings
 
+
+
+class ConsultantDiseases(models.Model):
+    disease_type = models.CharField(max_length = 300, null = True, blank = True)
+    def __str__(self):
+        return self.disease_type
+
+    class Meta:
+        db_table= 'consultant_diseases'
+
+
+
 class DoctorSpecialities(models.Model):
 
+    disease = models.ForeignKey(ConsultantDiseases, on_delete=models.SET_DEFAULT,null=True,default= None)
     speciality_name = models.CharField(max_length = 200, null = True, blank = True)
     speciality_description = models.CharField(max_length = 400, null = True, blank = True)
     def __str__(self):

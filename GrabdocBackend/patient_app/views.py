@@ -34,9 +34,9 @@ from django.apps import apps
 GrabdocDoctor = apps.get_model('doctors_app', 'GrabdocDoctor') # Doctors
 DoctorTimeSlots = apps.get_model('doctors_app', 'DoctorTimeSlots') #DoctorsSchedule
 DoctorSpecialities = apps.get_model('doctors_app', 'DoctorSpecialities')#DoctorSpecialities
+ConsultantDiseases = apps.get_model('doctors_app', 'ConsultantDiseases')
 
 from . import grabdoc_email
-
 
 
 #authentication_classes = [TokenAuthentication]
@@ -341,13 +341,13 @@ class PatientDetailsUpdate(APIView):
 
 
 
-class ConsultantDiseaseTableView(APIView):
+class ConsultantDiseasesView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, **kwargs):
-        rows = ConsultantDiseaseTable.objects.all()
-        serlizer_data = ConsultantDiseaseTableSerializer(rows, many=True)
+        rows = ConsultantDiseases.objects.all()
+        serlizer_data = ConsultantDiseasesSerializer(rows, many=True)
         return Response(serlizer_data.data)
 
 
@@ -357,7 +357,14 @@ class SpecialityDoctorsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, **kwargs):
-        rows =  DoctorSpecialities.objects.all()
+        disease_id = request.GET.get('disease_id', None)
+        if disease_id:
+             rows = DoctorSpecialities.objects.filter(disease_id=disease_id)
+        else:
+            rows =  DoctorSpecialities.objects.all()
+
+
+        
         serlizer_data = SpecialityMastertableSerializer(rows, many=True)
         return Response(serlizer_data.data)    
 
@@ -448,6 +455,12 @@ class PatientScheduleView(APIView):
             print("gd_patient:", gd_patient)
             print(request.data)
             
+
+            doctor_time_slot_id = request.data.get('doctor_time_slot_id', '')
+
+            if PatientSchedule.objects.filter(doctor_time_slot_id= doctor_time_slot_id,user_id=user_obj.id):
+                return Response({"success":False,"error_message":"Appointment is already exists"})
+
             updated_data = {
                 'user_id': user_obj.id,
                 'doctor_time_slot_id': request.data.get('doctor_time_slot_id', None),
@@ -533,10 +546,18 @@ class PatientRescheduleView(APIView):
 
             user_obj = request.user
             print("user_obj:", user_obj)
+
+            print("request_data", request.data)
+
+
             patient_schedule_id = request.data.get('patient_schedule_id', '')
-            doctors_schedule_id = request.data.get('doctors_schedule_id', '')
+            doctor_time_slot_id = request.data.get('doctor_time_slot_id', '')
+
+            if PatientSchedule.objects.filter(doctor_time_slot_id= doctor_time_slot_id,user_id=user_obj.id):
+                return Response({"success":False,"error_message":"Appointment is already exists"})
+
             ps_obj = PatientSchedule.objects.get(pk=patient_schedule_id)
-            ps_obj.doctors_schedule_id = doctors_schedule_id
+            ps_obj.doctor_time_slot_id = doctor_time_slot_id
             ps_obj.save()
 
 
@@ -717,8 +738,6 @@ class MedicalRecordView(APIView):
 
 
 
-
-
 class PatientScheduleMedicalRecordView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -867,7 +886,6 @@ class PaymentView(APIView):
         return Response(serializer_data.data)
 
 
-
     def post(self,request,payment_id=None):
         try:
             print(request.data)
@@ -905,7 +923,7 @@ class AgoraView(APIView):
 #        uid = request.user.id
         uid = 1
         channel_name = params.get("channel_name", "sample")
-        role = params.get("role", 2)
+        role = params.get("role", 1)
 
         expireTimeInSeconds = 3600
         currentTimestamp = int(time.time())
@@ -918,7 +936,6 @@ class AgoraView(APIView):
         return Response ({"success":True,"token":token})
 
                 
-
 
 
 """       
@@ -938,9 +955,4 @@ class AgoraView(APIView):
             print("The token for RTC",token_number)
             return Response ({"success":True,"token":token_number})
 """
-
-
-
-
-
 

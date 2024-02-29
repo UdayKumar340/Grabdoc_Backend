@@ -9,6 +9,7 @@ from django.apps import apps
 GrabdocDoctor = apps.get_model('doctors_app', 'GrabdocDoctor') # Doctors
 DoctorTimeSlots = apps.get_model('doctors_app', 'DoctorTimeSlots') #DoctorsSchedule
 DoctorSpecialities = apps.get_model('doctors_app', 'DoctorSpecialities')#DoctorSpecialities
+ConsultantDiseases = apps.get_model('doctors_app', 'ConsultantDiseases')
 
 
 
@@ -48,10 +49,10 @@ class GrabdocPatientSerializer(serializers.ModelSerializer): #PatientMasterTable
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)
 
-class ConsultantDiseaseTableSerializer(serializers.ModelSerializer):
+class ConsultantDiseasesSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = ConsultantDiseaseTable
+        model = ConsultantDiseases
         fields =['id','disease_type']
     
 
@@ -60,7 +61,7 @@ class SpecialityMastertableSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DoctorSpecialities
-        fields =['id','speciality_name', 'speciality_description']
+        fields =['id','speciality_name', 'speciality_description','disease_id']
 
 
 class DoctorsSerializer(serializers.ModelSerializer):
@@ -71,7 +72,15 @@ class DoctorsSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField(read_only=True)
 
     def get_rating(self, obj):
-        return Reviews.objects.filter(doctor=obj).aggregate(avgs=Avg(F('rating'))).get('avgs',None)
+        #return Reviews.objects.filter(doctor=obj).aggregate(avgs=Avg(F('rating'))).get('avgs',None)
+        avg_rating = Reviews.objects.filter(doctor=obj).aggregate(avgs=Avg(F('rating'))).get('avgs', None)
+        print("avg_rating",avg_rating)
+        if avg_rating is not None:
+            avg_rating = round(avg_rating, 1)
+            print("after round avg_rating",avg_rating)
+            return avg_rating
+        else:
+            return None
     
         #return obj.album_set.aggregate(avgs=Avg(F('num_stars'))).get('avgs',None)
     patient_count = serializers.SerializerMethodField(read_only=True)
@@ -116,8 +125,13 @@ class PatientScheduleSerializer(serializers.ModelSerializer):
 
     doctor_rating = serializers.SerializerMethodField(read_only=True)
     def get_doctor_rating(self,obj):
-        return Reviews.objects.filter(doctor_id=obj.doctor_time_slot.doctor_id).aggregate(avgs=Avg(F('rating'))).get('avgs',None)
-
+        avg_rating =  Reviews.objects.filter(doctor_id=obj.doctor_time_slot.doctor_id).aggregate(avgs=Avg(F('rating'))).get('avgs',None)
+        if avg_rating is not None:
+            avg_rating = round(avg_rating, 1)
+            print("after round avg_rating in patient scs",avg_rating)
+            return avg_rating
+        else:
+            return None
 
     appointment_for_name = serializers.SerializerMethodField(read_only=True)
     def get_appointment_for_name(self, obj):
@@ -134,7 +148,7 @@ class PatientScheduleSerializer(serializers.ModelSerializer):
         fields = [ 
            "id", "doctor_time_slot_id", "doctors_name", "user_id", 
             'appointment_for_name', 'status', 'doctor_experience',
-            'doctor_designation', 'doctor_speciality', 'doctor_id', 'time_slot','doctor_rating'
+            'doctor_designation', 'doctor_speciality', 'doctor_id', 'time_slot','doctor_rating',
         ]
 
 class FamilyMemberSerializer(serializers.ModelSerializer):

@@ -13,7 +13,7 @@ urlpatterns = [
 
 
 
-    path('diseases/', ConsultantDiseaseTableView.as_view()),
+    path('diseases/', ConsultantDiseasesView.as_view()),
 
     path('specialities/', SpecialityDoctorsView.as_view()),
 

@@ -4,6 +4,11 @@ from django.contrib import admin
 from doctors_app.models import *
 
 
+class ConsultantDiseasesAdmin(admin.ModelAdmin):
+  list_display = ("id", "disease_type")
+admin.site.register(ConsultantDiseases,ConsultantDiseasesAdmin)
+
+
 class DoctorSpecialitiesAdmin(admin.ModelAdmin):
   list_display = ("id","speciality_name","speciality_description")
 admin.site.register(DoctorSpecialities, DoctorSpecialitiesAdmin)
