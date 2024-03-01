@@ -176,7 +176,7 @@ class ResendOtpView(APIView):
             if mr_obj.number_of_attements >= 3:
                 return Response({"status": 400, "error": "Too many attempts"})
 
-            resend_otp = mr_obj.otp2
+            resend_otp = mr_obj.otp
             mr_obj.number_of_attements += 1
             mr_obj.save()
             print("resend_otp", resend_otp)
