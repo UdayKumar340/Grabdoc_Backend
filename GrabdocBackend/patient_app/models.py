@@ -125,7 +125,7 @@ class FamilyMember(models.Model):
         ('Wife','Wife'),
         ('Sister','Sister'),
         ('Brother','Brother'),
-        ('Others','Others')
+        ('Other','Other')
     
     )
     relationship = models.CharField(max_length= 10, choices=relations_choices)
