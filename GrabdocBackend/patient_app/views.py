@@ -487,6 +487,7 @@ class PatientScheduleView(APIView):
 
 
                 notification_text = f"Appointment scheduled for {Doctor_Name} {Format_Appoinment}."
+                notification_text +="Please remember to arrive on time for your appointment. If you need to reschedule or cancel, please do so at least 24 hours in advance.\n\n"
 
                 
 
@@ -510,20 +511,9 @@ class PatientScheduleView(APIView):
                 gd_patient = request.user.grabdocpatient
                 Patinet_Name = f"{gd_patient.first_name} {gd_patient.last_name}"
 
-                Doctor_Name = ps_obj.doctor_time_slot.doctor.name
 
- #               notification_text = f"Appointment scheduled for,{Patinet_Name} {Format_Appoinment}."
-
-
-
-                notification_text = f"Dear {Doctor_Name},\n\n"
-                notification_text += "This is to confirm that an appointment has been successfully scheduled through our  grabdoc application.\n\n"
-                notification_text += "Appointment Details:\n"
-                notification_text += f"Patient Name: {Patient_Name}\n"
-                notification_text += f"Time and date: {Format_Appoinment}\n"
-
-
-
+                notification_text = f"Appointment scheduled for,{Patinet_Name} {Format_Appoinment}."
+                notification_text += "This is to confirm that an appointment has been successfully scheduled through our grabdoc application.\n"
 
 
 
