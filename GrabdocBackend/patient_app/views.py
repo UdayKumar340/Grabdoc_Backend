@@ -488,6 +488,8 @@ class PatientScheduleView(APIView):
 
                 notification_text = f"Appointment scheduled for {Doctor_Name} {Format_Appoinment}."
 
+                
+
                 notification = Notification(
                     user = user_obj,
                     reference_user_id = ps_obj.doctor_time_slot.doctor_id,
@@ -508,7 +510,24 @@ class PatientScheduleView(APIView):
                 gd_patient = request.user.grabdocpatient
                 Patinet_Name = f"{gd_patient.first_name} {gd_patient.last_name}"
 
-                notification_text = f"Appointment scheduled for,{Patinet_Name} {Format_Appoinment}."
+                Doctor_Name = ps_obj.doctor_time_slot.doctor.name
+
+ #               notification_text = f"Appointment scheduled for,{Patinet_Name} {Format_Appoinment}."
+
+
+
+                notification_text = f"Dear {Doctor_Name},\n\n"
+                notification_text += "This is to confirm that an appointment has been successfully scheduled through our  grabdoc application.\n\n"
+                notification_text += "Appointment Details:\n"
+                notification_text += f"Patient Name: {Patient_Name}\n"
+                notification_text += f"Time and date: {Format_Appoinment}\n"
+
+
+
+
+
+
+
 
                 notification = Notification(
                     user_id = ps_obj.doctor_time_slot.doctor_id,
