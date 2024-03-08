@@ -21,7 +21,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.apps import apps
 PatientSchedule = apps.get_model('patient_app', 'PatientSchedule')
 
-MedicalRecord = apps.get_model('patient_app', 'MedicalRecord')
+PatientScheduleMedicalRecord = apps.get_model('patient_app', 'PatientScheduleMedicalRecord')
 
 PatientSummary = apps.get_model('patient_app', 'PatientSummary')
 
@@ -96,12 +96,6 @@ class ChangePasswordView(APIView):
             print(e)
     
         return Response({"staus": 500, "error_meassege": "someting went worng"})  
-
-
-
-
-
-
 
 
 
@@ -247,8 +241,8 @@ class MedicalRecordView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
         
-    def get(self,request,patient_id):
-        records = MedicalRecord.objects.filter( user_id= patient_id)
+    def get(self,request,patient_schedule_id):
+        records = PatientScheduleMedicalRecord.objects.filter( user_id= patient_schedule_id)
         serlizer_data = MedicalRecordSerializer(records, many=True)
         return Response(serlizer_data.data)
 """

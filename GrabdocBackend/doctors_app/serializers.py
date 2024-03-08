@@ -8,7 +8,7 @@ from django.apps import apps
 PatientSchedule = apps.get_model('patient_app', 'PatientSchedule')
 
 
-MedicalRecord = apps.get_model('patient_app', 'MedicalRecord')
+PatientScheduleMedicalRecord = apps.get_model('patient_app', 'PatientScheduleMedicalRecord')
 
 PatientSummary = apps.get_model('patient_app', 'PatientSummary')
 
@@ -16,6 +16,9 @@ PatientSummary = apps.get_model('patient_app', 'PatientSummary')
 Reviews = apps.get_model('patient_app', 'Reviews')
 
 Notification = apps.get_model('patient_app', 'Notification')
+
+
+MedicalRecord = apps.get_model('patient_app', 'MedicalRecord')
 
 class DoctorSpecialitiesSerializer(serializers.ModelSerializer):
 
@@ -74,12 +77,17 @@ class DoctorsScheduleSerializer(serializers.ModelSerializer):
 
 class MedicalRecordSerializer(serializers.ModelSerializer):
     
-    family_member_name = serializers.CharField(source='family_member.relationship',read_only=True)
+#    family_member_name = serializers.CharField(source='family_member.relationship',read_only=True)
+    record_name=  serializers.CharField(source='MedicalRecord.record_name',read_only=True)
+    file_name= serializers.CharField(source='MedicalRecord.file_name',read_only=True)
+    record_date=  serializers.CharField(source='MedicalRecord.record_date',read_only=True)
+
+
 
 
     class Meta:
-        model = MedicalRecord
-        fields = ["user_id",'family_member_id','family_member_name','record_name','file_name','record_date']
+        model = PatientScheduleMedicalRecord
+        fields = ['record_name','file_name','record_date','medical_record_id','patient_schedule_id']
 
 
 
