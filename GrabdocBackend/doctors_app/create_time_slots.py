@@ -39,9 +39,15 @@ ds_array = []
 
 for doctor_id in doctor_ids:
     current_datetime = timezone.now()
-    for _ in range(24):  # Create time slots for 24 hours, adjust as needed
+    for _ in range(5):  # Create time slots for 24 hours, adjust as needed
         ds_item = DoctorTimeSlots(doctor_id=doctor_id, time_slot=current_datetime)
         ds_array.append(ds_item)
         current_datetime += time_increment
 
 DoctorTimeSlots.objects.bulk_create(ds_array)
+
+
+
+#TODO: select all time slots of today and also repeat = daily 
+#2 create a time slot for same time for the date is todays date +7
+#

@@ -47,40 +47,77 @@ class GrabdocDoctorsSerializer(serializers.ModelSerializer):
 
 class DoctorTimeSlotsSerializer(serializers.ModelSerializer):
 
-    doctor_name = serializers.CharField(source='doctor.name',read_only=True)
+    
+    patient_schedule_id = serializers.SerializerMethodField(read_only=True)
+    def get_patient_schedule_id(self, obj):
+
+        ps= PatientSchedule.objects.filter(doctor_time_slot=obj).first()
+        if ps:
+            return ps.id
+        else:
+            return None
+
 
     class Meta:
         model = DoctorTimeSlots
-        fields = ['doctor_id','doctor_name','time_slot','id','repeat']
+        fields = ['patient_schedule_id','time_slot','id','repeat']
 
 
 
 class DoctorsScheduleSerializer(serializers.ModelSerializer):
-    doctors_name = serializers.CharField(source='doctors_schedule.doctor',read_only=True)
 
-    patient_first_name = serializers.CharField(source='user.first_name',read_only=True)
-    patient_last_name = serializers.CharField(source='user.last_name',read_only=True)
+    doctors_name = serializers.CharField(source='doctor_time_slot.doctor',read_only=True)
 
-    doctor_experience = serializers.CharField(source='doctors_schedule.doctor.experience',read_only=True)
-    doctor_designation = serializers.CharField(source='doctors_schedule.doctor.designation',read_only=True)
-    doctor_speciality = serializers.CharField(source='doctors_schedule.doctor.speciality',read_only=True)
-    doctor_id = serializers.CharField(source='doctors_schedule.doctor_id',read_only=True)
-    time_slot = serializers.CharField(source='doctors_schedule.time_slot',read_only=True)
+
+    patient_name = serializers.SerializerMethodField(read_only=True)
+    def get_patient_name(self, obj):
+        if obj.appointment_for_id:
+            return f"{obj.appointment_for.first_name} {obj.appointment_for.last_name}"
+        else:
+            return f"{obj.user.first_name} {obj.user.last_name}"
+
+
+    patient_date_of_birth = serializers.SerializerMethodField(read_only=True)
+    def get_patient_date_of_birth(self, obj):
+        if obj.appointment_for_id:
+            return obj.appointment_for.date_of_birth
+        else:
+            return obj.user.date_of_birth
+
+
+
+    patient_profile_picture = serializers.SerializerMethodField(read_only=True)
+    def get_patient_profile_picture(self, obj):
+        if obj.appointment_for_id:
+            return obj.appointment_for.profile_picture
+        else:
+            return obj.user.profile_picture
+
+
+    doctor_experience = serializers.CharField(source='doctor_time_slot.doctor.experience',read_only=True)
+    doctor_designation = serializers.CharField(source='doctor_time_slot.doctor.designation',read_only=True)
+    doctor_speciality = serializers.CharField(source='doctor_time_slot.doctor.speciality',read_only=True)
+    doctor_id = serializers.CharField(source='doctor_time_slot.doctor_id',read_only=True)
+    time_slot = serializers.CharField(source='doctor_time_slot.time_slot',read_only=True)
     
-
 
 
     class Meta:
         model = PatientSchedule
-        fields = ["doctors_schedule_id","doctors_name","user_id",'patient_first_name',"patient_last_name",'status','doctor_experience','doctor_designation','doctor_speciality','doctor_id','time_slot']
+        fields = [
+            'id',"doctors_name",'patient_name','status',
+            'doctor_experience','doctor_designation','doctor_speciality','doctor_id','time_slot',
+            "patient_profile_picture","patient_date_of_birth"
+        ]
 
 
-class MedicalRecordSerializer(serializers.ModelSerializer):
+class PatientScheduleMedicalRecordSerializer(serializers.ModelSerializer):
     
 #    family_member_name = serializers.CharField(source='family_member.relationship',read_only=True)
-    record_name=  serializers.CharField(source='MedicalRecord.record_name',read_only=True)
-    file_name= serializers.CharField(source='MedicalRecord.file_name',read_only=True)
-    record_date=  serializers.CharField(source='MedicalRecord.record_date',read_only=True)
+
+    record_name=  serializers.CharField(source='medical_record.record_name',read_only=True)
+    file_name= serializers.CharField(source='medical_record.file_name',read_only=True)
+    record_date=  serializers.CharField(source='medical_record.record_date',read_only=True)
 
 
 
@@ -99,9 +136,17 @@ class PatientSummarySerializer(serializers.ModelSerializer):
 
 
 class ReviewsSerializer(serializers.ModelSerializer):
+
+
+    patient_name = serializers.SerializerMethodField(read_only=True)
+    def get_patient_name(self, obj):
+        return f"{obj.user.first_name} {obj.user.last_name}"
+
+
+
     class Meta:
         model = Reviews
-        fields = ['doctor_id','user_id','comment','rating','review_date']
+        fields = ['doctor_id','user_id','comment','rating','review_date','patient_name']
 
 
 
