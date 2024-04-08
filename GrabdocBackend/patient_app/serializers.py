@@ -113,6 +113,7 @@ class PatientSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = PatientSummary
         fields = ["id",'summary','patient_schedule_id','ctime']
+        read_only_fields = ['patient_schedule_id', 'ctime']
 
 
 class PatientScheduleSerializer(serializers.ModelSerializer):

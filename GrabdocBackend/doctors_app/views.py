@@ -14,6 +14,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
+
+from datetime import timedelta
 #from GrabdocProject.patient_app.models import PatientSchedule
 
 #from GrabdocProject.patient_app.serializer import PatientScheduleSerializer
@@ -174,24 +176,55 @@ class Doctors_slot_View(APIView):
         return Response(serlizer_data.data)
 
     def post(self, request):
-        print(request.data)
 
-        doctor_id = request.user.id
-        print("doctor_id", doctor_id)
+        try:
+    
+            print(request.data)
 
-        time_slots = request.data.get("time_slots", [])
-        print('number of time_slots: ', len(time_slots))
-        repeat = request.data.get("repeat",'')
+            doctor_id = request.user.id
+            print("doctor_id", doctor_id)
 
-        ds_array = []
-        
-        for time_slot in time_slots:
-            ds_item = DoctorTimeSlots(doctor_id=doctor_id, time_slot=time_slot,repeat=repeat)
-            ds_array.append(ds_item)
+            time_slots = request.data.get("time_slots", [])
+            deleted_time_slot_ids= request.data.get("deleted_time_slot_ids", [])
+            print("deleted_time_slot_ids",deleted_time_slot_ids)
 
-        DoctorTimeSlots.objects.bulk_create(ds_array)
+            DoctorTimeSlots.objects.filter(id__in=deleted_time_slot_ids).delete()
 
-        return Response({"message":"Time slots created successfully"},status=status.HTTP_201_CREATED)
+            print('number of time_slots: ', len(time_slots))
+            repeat = request.data.get("repeat",'')
+
+            ds_array = []
+            
+            for time_slot in time_slots:
+                
+                if any(r.time_slot==time_slot for r in ds_array):
+                    continue
+                if DoctorTimeSlots.objects.filter(doctor_id=doctor_id, time_slot=time_slot):
+                    continue  
+                ds_item = DoctorTimeSlots(doctor_id=doctor_id, time_slot=time_slot, repeat=repeat)
+                ds_array.append(ds_item)
+
+                if repeat == "Daily":
+                    for i in range(1, 7):
+                        new_time_slot = datetime.datetime.fromisoformat(time_slot) + timedelta(days=i)
+                        if any(r.time_slot==new_time_slot for r in ds_array):
+                            continue
+                        if DoctorTimeSlots.objects.filter(doctor_id=doctor_id, time_slot=new_time_slot):
+                            continue
+
+                        ds_item = DoctorTimeSlots(doctor_id=doctor_id, time_slot=new_time_slot, repeat=repeat)
+                        ds_array.append(ds_item)
+
+            DoctorTimeSlots.objects.bulk_create(ds_array)
+
+            return Response({"success":True,"message":"Time slots created successfully"}, status=status.HTTP_201_CREATED)  #return Response({"message":"Time slots created successfully"},status=status.HTTP_201_CREATED)
+           
+        except  Exception as e:
+            print(e)
+            return Response ({'status':404 , 'error':"DoctorsTimeslotView server error"})
+
+
+    
 
 
     """
@@ -233,25 +266,23 @@ class DoctorsScheduleView(APIView):
 
     def get(self,request):
         status = request.GET.get('status','Upcoming')
-        rows = PatientSchedule.objects.filter(doctor = request.user,status=status)
-        serlizer_data = PatientScheduleSerializer(rows, many=True)
+
+        rows = PatientSchedule.objects.filter(doctor_time_slot__doctor_id=request.user.id, status=status)
+
+        serlizer_data = DoctorsScheduleSerializer(rows, many=True)
         return Response(serlizer_data.data)
 
-class MedicalRecordView(APIView):
+
+
+class PatientScheduleMedicalRecordView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
         
     def get(self,request,patient_schedule_id):
-        records = PatientScheduleMedicalRecord.objects.filter( user_id= patient_schedule_id)
-        serlizer_data = MedicalRecordSerializer(records, many=True)
-        return Response(serlizer_data.data)
-"""
-def get(self,request,patient_id):
-        records = MedicalRecord.objects.filter( user_id= patient_id)
-        serlizer_data = MedicalRecordSerializer(records, many=True)
+        records = PatientScheduleMedicalRecord.objects.filter( patient_schedule_id= patient_schedule_id)
+        serlizer_data = PatientScheduleMedicalRecordSerializer(records, many=True)
         return Response(serlizer_data.data)
 
-"""
 
 
 class PatientSummaryView(APIView):
@@ -283,9 +314,9 @@ class PatientSummaryView(APIView):
 
             if serlizer_data.is_valid():
                 data ={"summary":serlizer_data.data['summary']}
-                summary_obj, created = PatientSummary.objects.update_or_create(pk = patient_schedule_id, defaults= data) #summary= serlizer_data.data['summary']
+                summary_obj, created = PatientSummary.objects.update_or_create(pk = patient_schedule_id, defaults=updated_data ) #summary= serlizer_data.data['summary']
                 summary_obj.save()
-                return Response(serlizer_data.data, status=status.HTTP_201_CREATED)
+                return Response({"success":True})
             else:
 
                 response_data ={"success":False,'errors':serializer_data.errors,"error_meassege":"validation failed"}    

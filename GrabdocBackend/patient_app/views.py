@@ -24,7 +24,6 @@ import traceback
 from twilio.rest import Client
 import random
 
-from .RtcTokenBuilder import RtcTokenBuilder
 
 import time
 from .FCM import FCMThread
@@ -38,6 +37,9 @@ ConsultantDiseases = apps.get_model('doctors_app', 'ConsultantDiseases')
 
 from . import grabdoc_email
 
+
+
+from .RtcTokenBuilder2 import *
 
 #authentication_classes = [TokenAuthentication]
 #permission_classes = [IsAuthenticated]
@@ -550,6 +552,9 @@ class PatientScheduleView(APIView):
 class PatientRescheduleView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+
+
+    
     def post(self,request):
         try:
 
@@ -670,13 +675,25 @@ class FileUploadView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, format='jpg'):
+    def post(self, request):
         try:
             up_file = request.FILES['file']
+            print("up-file",up_file)
             media_id = str(uuid.uuid4())
             filename, file_extension = os.path.splitext(up_file.name)
+            print("filename",filename)
+
+            print("file_extension",file_extension)
+
+             # Allowed formats
+            allowed_formats = ['.jpg', '.pdf','.png']  # Add more formats as needed
+            
+            if file_extension.lower() not in allowed_formats:
+                return Response({'error': 'Invalid file format. Allowed formats: {}'.format(', '.join(allowed_formats))}, status=status.HTTP_400_BAD_REQUEST)
+
 
             unique_file_name = media_id  + file_extension
+            print("fileupload")
 
             file_path = settings.MEDIA_ROOT+"/" + unique_file_name
 
@@ -761,15 +778,28 @@ class PatientScheduleMedicalRecordView(APIView):
 
     def post(self, request,patient_schedule_id):
         try:
-            serlizer_data = PatientScheduleMedicalRecordSerializer(data=request.data, many=True)
+            data = []
+            medical_record_ids = request.data.get('medical_record_ids')
+            print("medical_record_ids",medical_record_ids)
+            print("patient_schedule_id",patient_schedule_id)
 
+            for medical_record_id in medical_record_ids:
+                data.append({"medical_record_id":medical_record_id,"patient_schedule_id":patient_schedule_id})
+            print("data",data)
+
+            # Separating patient_schedule_id and medical_record_id into separate lists
+            #patient_schedule_id = [entry['patient_schedule_id'] for entry in medical_record_ids]
+            #medical_record_id = [entry['medical_record_id'] for entry in medical_record_ids]
+
+
+            serlizer_data = PatientScheduleMedicalRecordSerializer(data=data, many=True)
+            print("serlizer_data",serlizer_data)
 
             if serlizer_data.is_valid():
                 records = PatientScheduleMedicalRecord.objects.filter(patient_schedule_id = patient_schedule_id) #request.data[0]['patient_schedule_id']
                 records.delete()
-                for r in request.data:
-                    patient_schedule_id = r['patient_schedule_id']
-                    medical_record_id = r['medical_record_id']
+                
+                for medical_record_id in medical_record_ids:
 
                     pm_obj = PatientScheduleMedicalRecord(patient_schedule_id = patient_schedule_id, medical_record_id = medical_record_id)
                     pm_obj.save()
@@ -780,7 +810,8 @@ class PatientScheduleMedicalRecordView(APIView):
                 print(serializer_data.errors)
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         except  Exception as e:
-            print(e)
+
+            traceback.print_exc()
             return Response ({'status':404 , 'error':"PatientScheduleMedicalRecordView server error"})
 
 
@@ -923,45 +954,30 @@ class PaymentView(APIView):
 
 
 class AgoraView(APIView):
-#    authentication_classes = [TokenAuthentication]
-#    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
     def get(self,request):
         
         params = request.GET
 
 #        uid = request.user.id
-        uid = 1
-        channel_name = params.get("channel_name", "sample")
+        uid = request.user.id
+        channel_name = params.get("channel_name", "test")
+        print("channel_name",channel_name)
         role = params.get("role", 1)
 
-        expireTimeInSeconds = 3600
-        currentTimestamp = int(time.time())
-        privilegeExpiredTs = currentTimestamp + expireTimeInSeconds
+
+        app_id = settings.AGORA_APP_ID
+        app_certificate= settings.AGORA_APP_CERTIFICATE
+
+        token_expiration_in_seconds = 3600
+        privilege_expiration_in_seconds = 3600
 
         print(f"uid: {uid}, channel_name: {channel_name}, role: {role}")
 
-        token = RtcTokenBuilder.buildTokenWithUid(settings.AGORA_APP_ID, settings.AGORA_APP_CERTIFICATE, channel_name, uid, role, privilegeExpiredTs)
-        print("The token for RTC",token)
-        return Response ({"success":True,"token":token})
+        token = RtcTokenBuilder.build_token_with_uid(app_id, app_certificate, channel_name, uid, Role_Subscriber,
+                                                 token_expiration_in_seconds, privilege_expiration_in_seconds)
+        print("Token with int uid: {}".format(token))
+        return Response ({"success":True,"token":token,"appId":app_id,"uid":uid})
 
-                
-
-
-"""       
-            app_id = settings.AGORA_APP_ID
-            app_certificate = settings.AGORA_APP_CERTIFICATE
-            channel_name = "sample"
-
-            uid = request.user.id
-            expiration_in_seconds = 3600
-
-            rtc_service = ServiceRtc(channel_name, uid)
-            rtc_service.add_privilege(ServiceRtc.kPrivilegeJoinChannel, expiration_in_seconds)
-
-            token = AccessToken(app_id=app_id, app_certificate=app_certificate, expire=expiration_in_seconds)
-            token.add_service(rtc_service)
-            token_number = (token.build())
-            print("The token for RTC",token_number)
-            return Response ({"success":True,"token":token_number})
-"""
 

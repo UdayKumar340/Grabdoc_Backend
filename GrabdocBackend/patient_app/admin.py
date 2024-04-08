@@ -50,7 +50,7 @@ admin.site.register(FamilyMember,FamilyMemberAdmin)
 
 
 class MedicalRecordAdmin(admin.ModelAdmin):
-  list_display = ("user_id", "user", "family_member","record_name","file_name","record_date")
+  list_display = ("user_id","id", "user", "family_member","record_name","file_name","record_date")
 admin.site.register(MedicalRecord, MedicalRecordAdmin)
 
 
