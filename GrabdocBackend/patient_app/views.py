@@ -626,7 +626,22 @@ class FamilyMemberView(APIView):
     def get(self, request):
         members = FamilyMember.objects.filter(user_id = request.user.id)
         serlizer_data = FamilyMemberSerializer(members, many=True)
-        return Response(serlizer_data.data)
+
+        data =serlizer_data.data
+
+        gd_patient = request.user.grabdocpatient
+        Myself = {
+            'id':0,
+        'profile_picture':gd_patient.profile_picture,
+        'user_id':request.user.id,
+        'first_name':gd_patient.first_name,
+        'last_name':gd_patient.last_name,
+        'gender':gd_patient.gender,
+        'date_of_birth':gd_patient.date_of_birth,
+        'relationship':"My self"
+        }
+        data.insert(0,Myself)
+        return Response(data)
 
     
     def post(self, request):
