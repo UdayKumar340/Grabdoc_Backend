@@ -701,10 +701,10 @@ class FileUploadView(APIView):
             print("file_extension",file_extension)
 
              # Allowed formats
-            allowed_formats = ['.jpg', '.pdf','.png']  # Add more formats as needed
+            allowed_formats = ['.jpg', '.pdf','.png','.jpeg']  # Add more formats as needed
             
             if file_extension.lower() not in allowed_formats:
-                return Response({'error': 'Invalid file format. Allowed formats: {}'.format(', '.join(allowed_formats))}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error_message': 'Invalid file format. Allowed formats: {}'.format(', '.join(allowed_formats))}, status=status.HTTP_400_BAD_REQUEST)
 
 
             unique_file_name = media_id  + file_extension
@@ -770,7 +770,7 @@ class MedicalRecordView(APIView):
 
                 return Response({"success":True}, status=status.HTTP_201_CREATED) # how many medical record added
             else:
-                response_data ={"success":False,'errors':serializer_data.errors,"error_meassege":"validation failed"}    
+                response_data ={"success":False,'errors':serializer_data.errors,"error_messege":"validation failed"}    
                 print(serializer_data.errors)
                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         except  Exception as e:
