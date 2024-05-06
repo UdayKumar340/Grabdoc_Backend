@@ -121,6 +121,7 @@ class PatientScheduleSerializer(serializers.ModelSerializer):
     doctor_experience = serializers.CharField(source='doctor_time_slot.doctor.experience',read_only=True)
     doctor_designation = serializers.CharField(source='doctor_time_slot.doctor.designation',read_only=True)
     doctor_speciality = serializers.CharField(source='doctor_time_slot.doctor.speciality',read_only=True)
+    doctor_profile_picture= serializers.CharField(source='doctor_time_slot.doctor.profile_picture',read_only=True)
     doctor_id = serializers.CharField(source='doctor_time_slot.doctor_id',read_only=True)
     time_slot = serializers.CharField(source='doctor_time_slot.time_slot',read_only=True)
 
@@ -149,10 +150,11 @@ class PatientScheduleSerializer(serializers.ModelSerializer):
         fields = [ 
            "id", "doctor_time_slot_id", "doctors_name", "user_id", 
             'appointment_for_name', 'status', 'doctor_experience',
-            'doctor_designation', 'doctor_speciality', 'doctor_id', 'time_slot','doctor_rating',
+            'doctor_designation', 'doctor_speciality', 'doctor_id', 'time_slot','doctor_rating',"doctor_profile_picture"
         ]
 
 class FamilyMemberSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model = FamilyMember
         fields = ['id','profile_picture','user_id','first_name','last_name','gender','date_of_birth','relationship']
