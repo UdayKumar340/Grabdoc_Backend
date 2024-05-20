@@ -209,6 +209,9 @@ class Reviews(models.Model):
     rating4 = models.IntegerField(default=0)
     review_date = models.DateField(auto_now_add=True, blank = True)
 
+
+
+
 class Notification(models.Model):
     user = models.ForeignKey(GrabdocUser, on_delete=models.CASCADE)
     reference_user =  models.ForeignKey(GrabdocUser, on_delete=models.SET_DEFAULT,related_name='reference_user',default=None,null=True)
@@ -216,6 +219,8 @@ class Notification(models.Model):
     notification_date  = models.DateTimeField(auto_now_add=True, blank=True)
     def __str__(self):
         return f'{self.user_id} ,{self.notification_text}'
+
+
 
 #user d
 # user, device_id push_token ctime utime time_zone login_status bollen field

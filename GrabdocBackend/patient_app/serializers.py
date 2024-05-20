@@ -210,9 +210,17 @@ class NotificationSerializer(serializers.ModelSerializer):
 
     def get_profile_picture(self, obj):
         if obj.reference_user_id:
-            return obj.reference_user.profile_picture
+            if obj.reference_user.user_type == 'Doctor':
+                return obj.reference_user.grabdocdoctor.profile_picture
+            else:
+                return obj.reference_user.grabdocpatient.profile_picture
+
         elif obj.user_id:
-            return obj.user.profile_picture
+
+            if obj.user.user_type == 'Doctor':
+                return obj.user.grabdocdoctor.profile_picture
+            else:
+                return obj.user.grabdocpatient.profile_picture
         else:
             return None
 
@@ -224,7 +232,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 
 
-        
+
 
 class UserDeviceSerializer(serializers.ModelSerializer):
     class Meta:
