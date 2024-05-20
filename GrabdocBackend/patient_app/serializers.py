@@ -209,11 +209,22 @@ class NotificationSerializer(serializers.ModelSerializer):
     profile_picture= serializers.SerializerMethodField(read_only=True)
 
     def get_profile_picture(self, obj):
-        return None
-#we need deside notification type which image doctor or system image
+        if obj.reference_user_id:
+            return obj.reference_user.profile_picture
+        elif obj.user_id:
+            return obj.user.profile_picture
+        else:
+            return None
+
+
     class Meta:
         model = Notification
         fields = ['user_id','notification_text','notification_date','reference_user_id','profile_picture']
+
+
+
+
+        
 
 class UserDeviceSerializer(serializers.ModelSerializer):
     class Meta:
